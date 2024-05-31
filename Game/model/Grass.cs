@@ -11,6 +11,6 @@ namespace Game.model
     {
         public string Name => "Grass";
 
-        public ConsoleColor Color => ColorSpectrum.Green;
+        public ConsoleColor Color => ColorSpectrum.Gras;
     }
 }

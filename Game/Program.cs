@@ -5,7 +5,7 @@ using Game.view;
 
 var view = new GameViewBuffer();
 var player = new Player(new Position(0, 0));
-var game = new SimpleGame(player);
+var game = new BridgeGame(player);
 
 var gameController = new GameController(view, game);
 

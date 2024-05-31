@@ -8,8 +8,9 @@ namespace Game.constants;
 
 internal class ColorSpectrum
 {
-    internal const ConsoleColor Green = ConsoleColor.Green;
-    internal const ConsoleColor Black = ConsoleColor.Black;
-    internal const ConsoleColor Red = ConsoleColor.Red;
-    internal const ConsoleColor Gray = ConsoleColor.Gray;
+    internal const ConsoleColor Gras = ConsoleColor.Green;
+    internal const ConsoleColor Cliff = ConsoleColor.Black;
+    internal const ConsoleColor Fire = ConsoleColor.DarkRed;
+    internal const ConsoleColor Stone = ConsoleColor.DarkGray;
+    internal const ConsoleColor Water = ConsoleColor.Blue;
 }

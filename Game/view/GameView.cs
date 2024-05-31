@@ -48,7 +48,6 @@ internal class GameView : IGameView
         return consistentCellWidth;
     }
 
-
     public Move GetCommand()
     {
         ConsoleKey key = Console.ReadKey().Key;

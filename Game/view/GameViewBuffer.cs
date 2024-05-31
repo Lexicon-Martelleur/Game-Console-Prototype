@@ -11,13 +11,13 @@ namespace Game.view;
 
 internal class GameViewBuffer : IGameView
 {
-    private string[,]? previousMap;
+    private string[,]? previousDrawnMap;
 
     public void DrawMap(Map map)
     {
-        if (previousMap == null)
+        if (previousDrawnMap == null)
         {
-            previousMap = new string[map.Height, map.Width];
+            previousDrawnMap = new string[map.Height, map.Width];
         }
 
         var currBackground = Console.BackgroundColor;
@@ -27,12 +27,12 @@ internal class GameViewBuffer : IGameView
             for (int x = 0; x < map.Width; x++)
             {
                 string currentSymbol = GetCellSymbol(map.Cells[y, x]);
-                if (previousMap[y, x] != currentSymbol)
+                if (previousDrawnMap[y, x] != currentSymbol)
                 {
                     Console.SetCursorPosition(x * 3, y);
                     Console.BackgroundColor = map.Cells[y, x].Terrain.Color;
-                    Console.Write($"  {currentSymbol}  ");
-                    previousMap[y, x] = currentSymbol;
+                    Console.Write($"{currentSymbol}");
+                    previousDrawnMap[y, x] = currentSymbol;
                 }
             }
         }
@@ -44,7 +44,25 @@ internal class GameViewBuffer : IGameView
     private string GetCellSymbol(Cell cell)
     {
         var artifact = cell.Artifact;
-        return artifact != null ? artifact.Symbol : " ";
+        return GetConsistentCellWidth(artifact?.Symbol ?? "");
+    }
+
+    private string GetConsistentCellWidth(string cellContent)
+    {
+        int cellWidth = 3;
+
+        string consistentCellWidth = "   ";
+
+        if (cellContent.Length > cellWidth)
+        {
+            consistentCellWidth = cellContent.Substring(0, cellWidth);
+        }
+        else if (cellContent.Length < cellWidth)
+        {
+            consistentCellWidth = cellContent.PadRight(cellWidth);
+        }
+
+        return consistentCellWidth;
     }
 
     public Move GetCommand()
