@@ -1,5 +1,6 @@
 ﻿using Game.constants;
-using Game.model;
+using Game.model.GameArtifact;
+using Game.model.Map;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,9 +11,14 @@ namespace Game.view;
 
 internal interface IGameView
 {
-    internal void DrawMap(Map map);
+    internal void DrawMap(MapHolder map);
 
     internal Move GetCommand();
 
     internal void ClearScreen();
+
+    void WriteGameInfo(Player player);
+
+    void WriteGameOver();
+    void PrintInvalidUserOperation(string msg);
 }

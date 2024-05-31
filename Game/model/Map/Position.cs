@@ -4,6 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Game.model;
+namespace Game.model.Map;
 
 internal record struct Position(int x, int y);

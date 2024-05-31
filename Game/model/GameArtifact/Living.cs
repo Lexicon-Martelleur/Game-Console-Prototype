@@ -4,11 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Game.model;
+namespace Game.model.GameArtifact;
 
-internal interface IGame
+internal interface Living
 {
-    Player Player { get; }
-
-    Map UpdateMap();
+    uint Health { get; set; }
 }

@@ -5,12 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Game.model
+namespace Game.model.terrain
 {
-    internal class Grass : Terrain
+    internal class Grass : ITerrain
     {
         public string Name => "Grass";
 
         public ConsoleColor Color => ColorSpectrum.Gras;
+
+        public string Symbol => "🌿";
     }
 }

@@ -1,26 +1,30 @@
 ﻿using Game.constants;
-using Game.model;
+using Game.model.Map;
+using Game.model.World;
 using Game.view;
 
 namespace Game.controller;
 
-internal class GameController(IGameView view, IGame game)
+internal class GameController(IGameView view, IGameWorld game)
 {
+    private bool _gameOver = false;
+
     internal void Start()
     {
         view.ClearScreen();
-        bool gameOver = false;
+        
         do
         {
             view.DrawMap(game.UpdateMap());
+            view.WriteGameInfo(game.Player);
             HandleMoveCommand(view.GetCommand());
             // Act
             // view.DrawMap(game.UpdateMap());
             // Enemy Action
             // view.DrawMap();
 
-        } while (!gameOver);
-        view.ClearScreen();
+        } while (!_gameOver);
+        view.WriteGameOver();
     }
 
     private void HandleMoveCommand(Move move)
@@ -37,6 +41,24 @@ internal class GameController(IGameView view, IGame game)
             default: break;
         }
         var nextPosition = new Position(nextX, nextY);
-        game.Player.UpdatePosition(nextPosition);
+        try
+        {
+            game.UpdatePlayerPosition(nextPosition);
+            HandleGameState();
+        }
+        catch (InvalidOperationException e) 
+        {
+            view.PrintInvalidUserOperation(e.Message);
+        }
+    }
+
+    private void HandleGameState()
+    {
+        _gameOver = game.IsGameOver();
+        if (_gameOver )
+        {
+            view.DrawMap(game.UpdateMap());
+            view.WriteGameInfo(game.Player);
+        }
     }
 }

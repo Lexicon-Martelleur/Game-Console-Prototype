@@ -1,39 +1,57 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
 using Game.constants;
-using Game.model;
+using Game.model.GameArtifact;
+using Game.model.Map;
 
 namespace Game.view;
 
 internal class GameView : IGameView
 {
-    public void DrawMap(Map map)
-    {
-        Console.Clear();
-        var currBackground = Console.BackgroundColor;
+    private string[,]? previousDrawnMap;
 
+    private int cellWidth = 3;
+
+    public void DrawMap(MapHolder map)
+    {
+        if (previousDrawnMap == null)
+        {
+            previousDrawnMap = new string[map.Height, map.Width];
+        }
+
+        var currBackground = Console.BackgroundColor;
 
         for (int y = 0; y < map.Height; y++)
         {
             for (int x = 0; x < map.Width; x++)
             {
-                Console.BackgroundColor = map.Cells[y, x].Terrain.Color;
-                var artifact = map.Cells[y, x].Artifact;
-                string cellContent = artifact != null ? $" {artifact.Symbol} " : "   ";
-                Console.Write(GetConsistentCellWidth(cellContent));
+                string currentSymbol = GetCellSymbol(map.Cells[y, x]);
+                if (previousDrawnMap[y, x] != currentSymbol)
+                {
+                    Console.SetCursorPosition(x * cellWidth, y);
+                    Console.BackgroundColor = map.Cells[y, x].Terrain.Color;
+                    Console.Write($"{currentSymbol}");
+                    previousDrawnMap[y, x] = currentSymbol;
+                }
             }
-            Console.WriteLine();
         }
+
         Console.BackgroundColor = currBackground;
+        Console.SetCursorPosition(0, map.Height);
     }
 
+    private string GetCellSymbol(Cell cell)
+    {
+        var artifact = cell.Artifact;
+        return GetConsistentCellWidth(artifact?.Symbol ?? cell.Terrain.Symbol);
+    }
 
-    /// <summary>
-    /// Used to truncate or pad the cell content to ensure consistent width
-    /// </summary>
     private string GetConsistentCellWidth(string cellContent)
     {
-        int cellWidth = 3;
-
         string consistentCellWidth = "   ";
 
         if (cellContent.Length > cellWidth)
@@ -63,9 +81,24 @@ internal class GameView : IGameView
         _ => Move.NONE
     };
 
-
     public void ClearScreen()
     {
         Console.Clear();
     }
+
+    public void WriteGameInfo(Player player)
+    {
+        Console.WriteLine($"{player.Name} has health {player.Health}");
+    }
+
+    public void WriteGameOver()
+    {
+        Console.WriteLine("Game over");
+    }
+
+    public void PrintInvalidUserOperation(string msg)
+    {
+        Console.WriteLine(msg);
+    }
 }
+
