@@ -3,7 +3,7 @@ namespace Game.model;
 
 internal class Map
 {
-    internal Cell[,] Cells { get; }
+    internal Cell[,] Cells { get; private set; }
     internal int Height { get; }
     internal int Width { get; }
 
@@ -12,16 +12,22 @@ internal class Map
         int width,
         IEnumerable<GameArtifact> artifacts 
     ) {
-        Cells = new Cell[height, width];
+        Height = height;
+        Width = width;
+        Cells = DrawMap(artifacts);
+    }
 
-        for (int y = 0; y < height; y++)
+    internal Cell [,] DrawMap(IEnumerable<GameArtifact> artifacts)
+    {
+        var cells = new Cell[Height, Width];
+        for (int y = 0; y < Height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (int x = 0; x < Width; x++)
             {
                 Position position = new Position(x, y);
                 Terrain terrain = new Grass();
 
-                Cells[y, x] = new Cell(
+                cells[y, x] = new Cell(
                     position,
                     terrain,
                     GetArtifactForPosition(artifacts, position)
@@ -29,15 +35,14 @@ internal class Map
             }
 
         }
-        Height = height;
-        Width = width;
+        return cells;
     }
 
     private GameArtifact? GetArtifactForPosition(IEnumerable<GameArtifact> artifacts, Position position)
     {
         foreach (GameArtifact artifact in artifacts)
         {
-            if (artifact.InitialPosition == position)
+            if (artifact.Position == position)
             {
                 return artifact;
             }

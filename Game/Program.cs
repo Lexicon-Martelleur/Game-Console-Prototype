@@ -3,8 +3,9 @@ using Game.controller;
 using Game.model;
 using Game.view;
 
-var view = new GameView();
-var game = new SimpleGame();
+var view = new GameViewBuffer();
+var player = new Player(new Position(0, 0));
+var game = new SimpleGame(player);
 
 var gameController = new GameController(view, game);
 

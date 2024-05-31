@@ -12,5 +12,5 @@ internal interface GameArtifact
 
     string Name { get; }
 
-    Position InitialPosition { get; }
+    Position Position { get; }
 }

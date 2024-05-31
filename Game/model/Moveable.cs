@@ -8,5 +8,5 @@ namespace Game.model;
 
 internal interface Moveable
 {
-    Position CurrentPosition { get; set; }
+    void UpdatePosition(Position newPosition);
 }

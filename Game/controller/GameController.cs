@@ -4,46 +4,39 @@ using Game.view;
 
 namespace Game.controller;
 
-internal class GameController(GameView view, IGame game)
+internal class GameController(IGameView view, IGame game)
 {
     internal void Start()
     {
-        bool gameOver = true;
+        view.ClearScreen();
+        bool gameOver = false;
         do
         {
-            view.DrawMap(game.Map);
+            view.DrawMap(game.UpdateMap());
             HandleMoveCommand(view.GetCommand());
             // Act
-            // view.DrawMap();
+            // view.DrawMap(game.UpdateMap());
             // Enemy Action
             // view.DrawMap();
 
         } while (!gameOver);
+        view.ClearScreen();
     }
 
     private void HandleMoveCommand(Move move)
     {
-        var prevPosition = game.Player.CurrentPosition; 
+        var prevPosition = game.Player.Position;
+        int nextY = prevPosition.y;
+        int nextX = prevPosition.x;
         switch (move)
         {
-            case Move.UP:
-                var nextPosition = new Position(prevPosition.y - 1, prevPosition.x);
-                game.Player.CurrentPosition = nextPosition;
-                break;
-            case Move.RIGHT:
-                nextPosition = new Position(prevPosition.y, prevPosition.x + 1);
-                game.Player.CurrentPosition = nextPosition;
-                break;
-            case Move.DOWN:
-                nextPosition = new Position(prevPosition.y + 1, prevPosition.x);
-                game.Player.CurrentPosition = nextPosition;
-                break;
-            case Move.LEFT:
-                nextPosition = new Position(prevPosition.y, prevPosition.x - 1);
-                game.Player.CurrentPosition = nextPosition;
-                break;
-            default:
-                break;
+            case Move.UP: nextY--; break;
+            case Move.RIGHT: nextX++; break;
+            case Move.DOWN: nextY++; break;
+            case Move.LEFT: nextX--; break;
+            default: break;
         }
+        var nextPosition = new Position(nextX, nextY);
+        game.Player.UpdatePosition(nextPosition);
     }
 }

@@ -6,17 +6,19 @@ using System.Threading.Tasks;
 
 namespace Game.model;
 
-internal class Player(Position initialPosition) : GameArtifact, Moveable
+internal class Player(Position position) : GameArtifact, Moveable
 {
-    private Position _currentPosition = initialPosition; 
     public string Symbol => "🐝";
 
     public string Name => "Player";
 
-    public Position InitialPosition => initialPosition;
+    public Position Position {
+        get => position;
+        private set => position = value;
+    }
 
-    public Position CurrentPosition {
-        get => InitialPosition;
-        set => _currentPosition = value;
+    public void UpdatePosition(Position newPosition)
+    {
+        Position = newPosition;
     }
 }

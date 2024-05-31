@@ -3,9 +3,31 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.34916.146
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C81E56B3-99AA-44A4-96D3-EB60FEF1D2A3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{A16DB2B1-2D68-42E3-ABFF-67641FD340A2}"
+	ProjectSection(SolutionItems) = preProject
+		.gitkeep = .gitkeep
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Game", "Game\Game.csproj", "{3C333363-8AC0-40AC-861D-91C8F8243492}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3C333363-8AC0-40AC-861D-91C8F8243492}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C333363-8AC0-40AC-861D-91C8F8243492}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C333363-8AC0-40AC-861D-91C8F8243492}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C333363-8AC0-40AC-861D-91C8F8243492}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3C333363-8AC0-40AC-861D-91C8F8243492} = {C81E56B3-99AA-44A4-96D3-EB60FEF1D2A3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A35A934C-610A-4A37-A00A-37DEC0C26A28}

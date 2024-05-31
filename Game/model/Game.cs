@@ -8,7 +8,7 @@ namespace Game.model;
 
 internal interface IGame
 {
-    Map Map { get; }
-
     Player Player { get; }
+
+    Map UpdateMap();
 }

@@ -8,13 +8,18 @@ namespace Game.model;
 
 internal class SimpleGame(Player player) : IGame
 {
+    private readonly int _height = 30;
+    private readonly int _width = 50;
     private List<GameArtifact> _artifacts = [
         player
     ];
     
-    public Map Map => new Map(20, 30, GetGameArtifacts());
-
     public Player Player { get => player; }
+
+    public Map UpdateMap()
+    {
+        return new Map(_height, _width, GetGameArtifacts());
+    }
 
     internal IEnumerable<GameArtifact> GetGameArtifacts()
     {
