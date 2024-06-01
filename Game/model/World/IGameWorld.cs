@@ -1,4 +1,4 @@
-﻿using Game.model.GameArtifact;
+﻿using Game.model.GameEntity;
 using Game.model.Map;
 
 using System;

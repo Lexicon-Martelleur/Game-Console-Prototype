@@ -5,7 +5,7 @@ using Game.view;
 
 namespace Game.controller;
 
-internal class GameController(IGameView view, IGameWorld game)
+internal class GameController(IGameView view, IGameWorld world)
 {
     private bool _gameOver = false;
 
@@ -17,8 +17,8 @@ internal class GameController(IGameView view, IGameWorld game)
         
         do
         {
-            view.DrawMap(game.UpdateMap());
-            view.WriteGameInfo(game);
+            view.DrawMap(world.UpdateMap());
+            view.WriteGameInfo(world);
             HandleMoveCommand(view.GetCommand());
             // Act
             // view.DrawMap(game.UpdateMap());
@@ -30,7 +30,7 @@ internal class GameController(IGameView view, IGameWorld game)
 
     private void HandleMoveCommand(Move move)
     {
-        var prevPosition = game.Player.Position;
+        var prevPosition = world.Player.Position;
         int nextY = prevPosition.y;
         int nextX = prevPosition.x;
         switch (move)
@@ -44,30 +44,31 @@ internal class GameController(IGameView view, IGameWorld game)
         var nextPosition = new Position(nextX, nextY);
         try
         {
-            game.UpdatePlayerPosition(nextPosition);
+            world.UpdatePlayerPosition(nextPosition);
             HandleGameState();
         }
         catch (InvalidOperationException e) 
         {
-            view.WriteWarningMessage(game.Player, e.Message);
+            view.WriteWarningMessage(world.Player, e.Message);
         }
     }
 
     private void HandleGameState()
     {
-        _gameOver = game.IsGameOver();
+        _gameOver = world.IsGameOver();
         if (_gameOver )
         {
-            view.DrawMap(game.UpdateMap());
-            view.WriteGameInfo(game);
+            view.DrawMap(world.UpdateMap());
+            view.WriteGameInfo(world);
             view.WriteGameOver();
         }
 
-        _goal = game.IsGoal();
+        // TODO When goal use next world if exist do not end game.
+        _goal = world.IsGoal();
         if (_goal)
         {
-            view.DrawMap(game.UpdateMap());
-            view.WriteGameInfo(game);
+            view.DrawMap(world.UpdateMap());
+            view.WriteGameInfo(world);
             view.WriteIsGoal();
         }
     }

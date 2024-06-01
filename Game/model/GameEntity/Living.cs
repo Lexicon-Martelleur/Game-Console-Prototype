@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Game.model.GameArtifact;
+namespace Game.model.GameEntity;
 
 internal interface Living
 {

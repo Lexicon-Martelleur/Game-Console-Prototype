@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Game.model.Map;
 
-namespace Game.model.GameArtifact;
+namespace Game.model.GameEntity;
 
 internal interface Moveable
 {

@@ -5,13 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Game.model.Map;
 
-namespace Game.model.GameArtifact;
+namespace Game.model.Base;
 
-internal interface IGameArtifact
+internal interface IGameArtefact
 {
     internal string Symbol { get; }
 
     internal string Name { get; }
-
-    internal Position Position { get; }
 }

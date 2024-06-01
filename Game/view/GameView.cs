@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Game.constants;
-using Game.model.GameArtifact;
+using Game.model.GameEntity;
 using Game.model.Map;
 using Game.model.World;
 

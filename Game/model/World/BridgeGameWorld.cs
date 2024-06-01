@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Game.model.GameArtifact;
+using Game.model.Base;
+using Game.model.GameEntity;
 using Game.model.Map;
 using Game.model.terrain;
 using Game.model.Terrain;
@@ -13,7 +14,7 @@ namespace Game.model.World;
 internal class BridgeGameWorld(
     Player player,
     Flag flag,
-    List<IGameArtifact> artifacts) : IGameWorld
+    List<IGameEntity> entities) : IGameWorld
 {
 
     private readonly int _height = 30;
@@ -28,7 +29,7 @@ internal class BridgeGameWorld(
 
     public MapHolder UpdateMap()
     {
-        _mapHolder = new MapHolder(_height, _width, DrawMap(GetGameArtifacts()));
+        _mapHolder = new MapHolder(_height, _width, DrawMap(GetGameEntities()));
         return _mapHolder;
     }
 
@@ -44,12 +45,12 @@ internal class BridgeGameWorld(
             $" {cliff.Symbol} = -{cliff.ReduceHealth()})";
     }
 
-    internal IEnumerable<IGameArtifact> GetGameArtifacts()
+    internal IEnumerable<IGameEntity> GetGameEntities()
     {
-        return artifacts;
+        return entities;
     }
 
-    internal Cell[,] DrawMap(IEnumerable<IGameArtifact> artifacts)
+    internal Cell[,] DrawMap(IEnumerable<IGameEntity> entities)
     {
         var cells = new Cell[_height, _width];
         for (int y = 0; y < _height; y++)
@@ -62,7 +63,7 @@ internal class BridgeGameWorld(
                 cells[y, x] = new Cell(
                     position,
                     terrain,
-                    GetArtifactForPosition(artifacts, position)
+                    GetArtifactForPosition(entities, position)
                 );
             }
 
@@ -114,15 +115,15 @@ internal class BridgeGameWorld(
         return (position.x == 40 || position.x == 41) && position.y != 2;
     }
 
-    private IGameArtifact? GetArtifactForPosition(
-        IEnumerable<IGameArtifact> artifacts,
+    private IGameEntity? GetArtifactForPosition(
+        IEnumerable<IGameEntity> entities,
         Position position)
     {
-        foreach (IGameArtifact artifact in artifacts)
+        foreach (IGameEntity entity in entities)
         {
-            if (artifact.Position == position)
+            if (entity.Position == position)
             {
-                return artifact;
+                return entity;
             }
         }
         return null;

@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Game.model.Base;
 using Game.model.Map;
 
-namespace Game.model.GameArtifact;
+namespace Game.model.GameEntity;
 
-internal class Player(Position position) : IGameArtifact, Moveable, Living
+internal class Player(uint id, Position position) : IGameEntity, Moveable, Living
 {
+    public uint Id => id;
+
     private uint _health = 100;
     public string Symbol => "🐝";
 
