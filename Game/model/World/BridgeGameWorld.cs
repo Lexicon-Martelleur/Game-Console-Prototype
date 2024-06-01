@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Game.model.GameArtifact;
 using Game.model.Map;
 using Game.model.terrain;
+using Game.model.Terrain;
 
 namespace Game.model.World;
 
@@ -16,12 +17,14 @@ internal class BridgeGameWorld(Player player) : IGameWorld
     private List<IGameArtifact> _artifacts = [
         player
     ];
+    private MapHolder? _mapHolder;
 
     public Player Player { get => player; }
 
     public MapHolder UpdateMap()
     {
-        return new MapHolder(_height, _width, DrawMap(GetGameArtifacts()));
+        _mapHolder = new MapHolder(_height, _width, DrawMap(GetGameArtifacts()));
+        return _mapHolder;
     }
 
     internal IEnumerable<IGameArtifact> GetGameArtifacts()
@@ -74,7 +77,7 @@ internal class BridgeGameWorld(Player player) : IGameWorld
         }
     }
 
-    private bool IsCliffTerrain(Position position)
+    private bool IsStoneTerrain(Position position)
     {
         return (position.x == 10 || position.x == 11) && position.y != 5;
     }
@@ -89,7 +92,7 @@ internal class BridgeGameWorld(Player player) : IGameWorld
         return (position.x == 30 || position.x == 31) && position.y != 12;
     }
 
-    private bool IsStoneTerrain(Position position)
+    private bool IsCliffTerrain(Position position)
     {
         return (position.x == 40 || position.x == 41) && position.y != 2;
     }
@@ -115,10 +118,23 @@ internal class BridgeGameWorld(Player player) : IGameWorld
             throw new InvalidOperationException("Player can not move to this position");
         }
         Player.UpdatePosition(position);
+        UpdatePlayerHealth(position);
+    }
+
+    private void UpdatePlayerHealth(Position position)
+    {
         if (IsCliffTerrain(position) ||
             IsFireTerrain(position) ||
-            IsWaterTerrain(position)) {
-            Player.Health = 0;
+            IsWaterTerrain(position))
+        {
+            var terrain = _mapHolder?.GetDangerousTerrain(position);
+            if (player.Health < (terrain?.ReduceHealth() ?? 0)) {
+                player.Health = 0;
+            }
+            else
+            {
+                player.Health = player.Health - terrain?.ReduceHealth() ?? 0;
+            }
         }
     }
 

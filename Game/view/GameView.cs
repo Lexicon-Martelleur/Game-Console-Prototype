@@ -41,26 +41,26 @@ internal class GameView : IGameView
         }
 
         Console.BackgroundColor = currBackground;
-        Console.SetCursorPosition(0, map.Height);
+        Console.SetCursorPosition(0, map.Height + 1);
     }
 
     private string GetCellSymbol(Cell cell)
     {
         var artifact = cell.Artifact;
-        return GetConsistentCellWidth(artifact?.Symbol ?? cell.Terrain.Symbol);
+        return GetConsistentWidth(artifact?.Symbol ?? cell.Terrain.Symbol, cellWidth);
     }
 
-    private string GetConsistentCellWidth(string cellContent)
+    private string GetConsistentWidth(string content, int width)
     {
         string consistentCellWidth = "   ";
 
-        if (cellContent.Length > cellWidth)
+        if (content.Length > width)
         {
-            consistentCellWidth = cellContent.Substring(0, cellWidth);
+            consistentCellWidth = content.Substring(0, width);
         }
-        else if (cellContent.Length < cellWidth)
+        else if (content.Length < width)
         {
-            consistentCellWidth = cellContent.PadRight(cellWidth);
+            consistentCellWidth = content.PadRight(width);
         }
 
         return consistentCellWidth;
@@ -88,17 +88,31 @@ internal class GameView : IGameView
 
     public void WriteGameInfo(Player player)
     {
-        Console.WriteLine($"{player.Name} has health {player.Health}");
+        Console.WriteLine(GetConsistentWidth(
+            $"❤️ {player.Name} health: {player.Health}",
+            100
+        ));
     }
 
     public void WriteGameOver()
     {
-        Console.WriteLine("Game over");
+        Console.WriteLine("⚠️ Game over");
     }
 
-    public void PrintInvalidUserOperation(string msg)
+    public void PrintPlayerPosition(Player player)
     {
-        Console.WriteLine(msg);
+        Console.WriteLine(GetConsistentWidth(
+            $"{player.Symbol} {player.Name} position: [{player.Position.x}, {player.Position.y}]",
+            100
+        ));
+    }
+
+    public void PrintInvalidPlayerPosition(Player player, string msg)
+    {
+        Console.WriteLine(GetConsistentWidth(
+            $"{player.Symbol} {player.Name} position: ⚠  {msg}",
+            100
+        ));
     }
 }
 

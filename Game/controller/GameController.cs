@@ -45,10 +45,11 @@ internal class GameController(IGameView view, IGameWorld game)
         {
             game.UpdatePlayerPosition(nextPosition);
             HandleGameState();
+            view.PrintPlayerPosition(game.Player);
         }
         catch (InvalidOperationException e) 
         {
-            view.PrintInvalidUserOperation(e.Message);
+            view.PrintInvalidPlayerPosition(game.Player, e.Message);
         }
     }
 

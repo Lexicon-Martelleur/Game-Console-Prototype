@@ -1,4 +1,7 @@
-﻿namespace Game.model.Map;
+﻿using Game.model.terrain;
+using Game.model.Terrain;
+
+namespace Game.model.Map;
 
 internal class MapHolder
 {
@@ -15,5 +18,20 @@ internal class MapHolder
         Height = height;
         Width = width;
         Cells = cells;
+    }
+
+    internal DangerousTerrain? GetDangerousTerrain(Position position)
+    {
+        Cell? findCell = null;
+        foreach (Cell cell in Cells)
+        {
+            if (cell.Position == position) 
+            {
+                findCell = cell; 
+                break;
+            }
+        }
+        var terrain = findCell?.Terrain;
+        return terrain as DangerousTerrain;
     }
 }

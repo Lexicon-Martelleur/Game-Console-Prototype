@@ -20,5 +20,8 @@ internal interface IGameView
     void WriteGameInfo(Player player);
 
     void WriteGameOver();
-    void PrintInvalidUserOperation(string msg);
+
+    void PrintPlayerPosition(Player player);
+
+    void PrintInvalidPlayerPosition(Player player, string msg);
 }
