@@ -13,9 +13,15 @@ internal interface IGameWorld
 {
     internal Player Player { get; }
 
+    internal Flag Flag { get; }
+
     internal MapHolder UpdateMap();
 
     internal void UpdatePlayerPosition(Position position);
 
     internal bool IsGameOver();
+
+    internal bool IsGoal();
+
+    internal string GetTerrainInfo();
 }

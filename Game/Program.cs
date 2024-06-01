@@ -8,8 +8,13 @@ using Game.view;
 
 var view = new GameView();
 var player = new Player(new Position(0, 0));
-var game = new BridgeGameWorld(player);
+var flag = new Flag(new Position(48, 28));
+List<IGameArtifact> artifacts = [
+    player,
+    flag
+];
+var world = new BridgeGameWorld(player, flag, artifacts);
 
-var gameController = new GameController(view, game);
+var gameController = new GameController(view, world);
 
 gameController.Start();

@@ -1,6 +1,7 @@
 ﻿using Game.constants;
 using Game.model.GameArtifact;
 using Game.model.Map;
+using Game.model.World;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,11 +18,13 @@ internal interface IGameView
 
     internal void ClearScreen();
 
-    void WriteGameInfo(Player player);
+    internal void WriteGameInfo(IGameWorld game);
 
-    void WriteGameOver();
+    internal void WriteGameOver();
 
-    void PrintPlayerPosition(Player player);
+    internal void WriteWarningMessage(Player player, string msg);
 
-    void PrintInvalidPlayerPosition(Player player, string msg);
+    internal void WriteGoalMessage(Flag flag);
+
+    internal void WriteIsGoal();
 }

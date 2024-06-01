@@ -10,16 +10,21 @@ using Game.model.Terrain;
 
 namespace Game.model.World;
 
-internal class BridgeGameWorld(Player player) : IGameWorld
+internal class BridgeGameWorld(
+    Player player,
+    Flag flag,
+    List<IGameArtifact> artifacts) : IGameWorld
 {
+
     private readonly int _height = 30;
+    
     private readonly int _width = 50;
-    private List<IGameArtifact> _artifacts = [
-        player
-    ];
+
     private MapHolder? _mapHolder;
 
     public Player Player { get => player; }
+
+    public Flag Flag { get => flag; }
 
     public MapHolder UpdateMap()
     {
@@ -27,9 +32,21 @@ internal class BridgeGameWorld(Player player) : IGameWorld
         return _mapHolder;
     }
 
+    public string GetTerrainInfo()
+    {
+        var fire = new Fire();
+        var water = new Water();
+        var cliff = new Cliff();
+        var stone = new Stone();
+        return $"({stone.Symbol} = -0," +
+            $" {water.Symbol} = -{water.ReduceHealth()}," +
+            $" {fire.Symbol} = -{fire.ReduceHealth()}" +
+            $" {cliff.Symbol} = -{cliff.ReduceHealth()})";
+    }
+
     internal IEnumerable<IGameArtifact> GetGameArtifacts()
     {
-        return _artifacts;
+        return artifacts;
     }
 
     internal Cell[,] DrawMap(IEnumerable<IGameArtifact> artifacts)
@@ -115,7 +132,7 @@ internal class BridgeGameWorld(Player player) : IGameWorld
     {
         if (!IsValidPosition(position))
         {
-            throw new InvalidOperationException("Player can not move to this position");
+            throw new InvalidOperationException($"Player can not move to position [{position.x}, {position.y}]");
         }
         Player.UpdatePosition(position);
         UpdatePlayerHealth(position);
@@ -157,5 +174,10 @@ internal class BridgeGameWorld(Player player) : IGameWorld
     public bool IsGameOver()
     {
         return Player.Health == 0;
+    }
+
+    public bool IsGoal()
+    {
+        return Player.Position == flag.Position;
     }
 }

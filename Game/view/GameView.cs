@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Game.constants;
 using Game.model.GameArtifact;
 using Game.model.Map;
+using Game.model.World;
 
 namespace Game.view;
 
@@ -41,7 +42,7 @@ internal class GameView : IGameView
         }
 
         Console.BackgroundColor = currBackground;
-        Console.SetCursorPosition(0, map.Height + 1);
+        Console.SetCursorPosition(0, map.Height);
     }
 
     private string GetCellSymbol(Cell cell)
@@ -86,20 +87,22 @@ internal class GameView : IGameView
         Console.Clear();
     }
 
-    public void WriteGameInfo(Player player)
+    public void WriteGameInfo(IGameWorld world)
+    {
+        PrintHealthInfo(world);
+        PrintPlayerPosition(world.Player);
+        WriteGoalMessage(world.Flag);
+    }
+
+    private void PrintHealthInfo(IGameWorld world)
     {
         Console.WriteLine(GetConsistentWidth(
-            $"❤️ {player.Name} health: {player.Health}",
+            $"❤️ {world.Player.Name} health: {world.Player.Health} {world.GetTerrainInfo()}",
             100
         ));
     }
 
-    public void WriteGameOver()
-    {
-        Console.WriteLine("⚠️ Game over");
-    }
-
-    public void PrintPlayerPosition(Player player)
+    private void PrintPlayerPosition(Player player)
     {
         Console.WriteLine(GetConsistentWidth(
             $"{player.Symbol} {player.Name} position: [{player.Position.x}, {player.Position.y}]",
@@ -107,10 +110,34 @@ internal class GameView : IGameView
         ));
     }
 
-    public void PrintInvalidPlayerPosition(Player player, string msg)
+    public void WriteGoalMessage(Flag flag)
     {
         Console.WriteLine(GetConsistentWidth(
-            $"{player.Symbol} {player.Name} position: ⚠  {msg}",
+            $"ℹ️ Take the flag at [{flag.Position.x}, {flag.Position.y}] to win",
+            100
+        ));
+    }
+
+    public void WriteWarningMessage(Player player, string msg)
+    {
+        Console.WriteLine(GetConsistentWidth(
+            $"⚠  {msg}",
+            100
+        ));
+    }
+
+    public void WriteGameOver()
+    {
+        Console.WriteLine(GetConsistentWidth(
+            "⚠  Game over",
+            100
+        ));
+    }
+
+    public void WriteIsGoal()
+    {
+        Console.WriteLine(GetConsistentWidth(
+            "🎉 Congratulation",
             100
         ));
     }

@@ -9,6 +9,8 @@ internal class GameController(IGameView view, IGameWorld game)
 {
     private bool _gameOver = false;
 
+    private bool _goal = false;
+
     internal void Start()
     {
         view.ClearScreen();
@@ -16,15 +18,14 @@ internal class GameController(IGameView view, IGameWorld game)
         do
         {
             view.DrawMap(game.UpdateMap());
-            view.WriteGameInfo(game.Player);
+            view.WriteGameInfo(game);
             HandleMoveCommand(view.GetCommand());
             // Act
             // view.DrawMap(game.UpdateMap());
             // Enemy Action
             // view.DrawMap();
 
-        } while (!_gameOver);
-        view.WriteGameOver();
+        } while (!_gameOver && !_goal);
     }
 
     private void HandleMoveCommand(Move move)
@@ -45,11 +46,10 @@ internal class GameController(IGameView view, IGameWorld game)
         {
             game.UpdatePlayerPosition(nextPosition);
             HandleGameState();
-            view.PrintPlayerPosition(game.Player);
         }
         catch (InvalidOperationException e) 
         {
-            view.PrintInvalidPlayerPosition(game.Player, e.Message);
+            view.WriteWarningMessage(game.Player, e.Message);
         }
     }
 
@@ -59,7 +59,16 @@ internal class GameController(IGameView view, IGameWorld game)
         if (_gameOver )
         {
             view.DrawMap(game.UpdateMap());
-            view.WriteGameInfo(game.Player);
+            view.WriteGameInfo(game);
+            view.WriteGameOver();
+        }
+
+        _goal = game.IsGoal();
+        if (_goal)
+        {
+            view.DrawMap(game.UpdateMap());
+            view.WriteGameInfo(game);
+            view.WriteIsGoal();
         }
     }
 }
