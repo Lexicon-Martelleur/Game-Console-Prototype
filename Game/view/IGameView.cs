@@ -12,19 +12,15 @@ namespace Game.view;
 
 internal interface IGameView
 {
-    internal void DrawMap(MapHolder map);
+    internal void DrawWorld(IGameWorld world, MapHolder map, string msg);
 
     internal Move GetCommand();
 
     internal void ClearScreen();
 
-    internal void WriteGameInfo(IGameWorld game);
+    internal string GetGameOverText();
 
-    internal void WriteGameOver();
+    internal string GetWarningMessageText(Player player, string msg);
 
-    internal void WriteWarningMessage(Player player, string msg);
-
-    internal void WriteGoalMessage(Flag flag);
-
-    internal void WriteIsGoal();
+    internal string GetIsGoalText();
 }

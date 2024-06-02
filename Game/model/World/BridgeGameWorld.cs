@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Game.model.Base;
+﻿using Timers = System.Timers;
 using Game.model.GameEntity;
 using Game.model.Map;
 using Game.model.terrain;
-using Game.model.Terrain;
+using System.Timers;
 
 namespace Game.model.World;
 
@@ -18,10 +13,21 @@ internal class BridgeGameWorld(
 {
 
     private readonly int _height = 30;
-    
+
     private readonly int _width = 50;
 
+    private bool _odd = false;
+
     private MapHolder? _mapHolder;
+
+    private Timers.Timer _worldTimer = new Timers.Timer(1000);
+
+    private ElapsedEventHandler? onWorldTimeChangeWrapper;
+
+    public Timers.Timer WorldTimer {
+        get => _worldTimer;
+        set => _worldTimer = value;
+    }
 
     public Player Player { get => player; }
 
@@ -41,7 +47,7 @@ internal class BridgeGameWorld(
         var stone = new Stone();
         return $"({stone.Symbol} = -0," +
             $" {water.Symbol} = -{water.ReduceHealth()}," +
-            $" {fire.Symbol} = -{fire.ReduceHealth()}" +
+            $" {fire.Symbol} = -{fire.ReduceHealth()}," +
             $" {cliff.Symbol} = -{cliff.ReduceHealth()})";
     }
 
@@ -172,13 +178,49 @@ internal class BridgeGameWorld(
         }
     }
 
+    public void InitWorld(Timers.ElapsedEventHandler onWorldTimeChange)
+    {
+        onWorldTimeChangeWrapper = (sender, e) =>
+        {
+            UpdateWorld();
+            onWorldTimeChange(sender, e);
+        };
+        WorldTimer.Elapsed += onWorldTimeChangeWrapper;
+        WorldTimer.AutoReset = true;
+        WorldTimer.Enabled = true;
+    }
+
+    private void UpdateWorld()
+    {
+        var newPossition = _odd ? -1 : 1;
+        _odd = !_odd;
+        foreach (IGameEntity entity in entities)
+        {
+            if (entity is Ant || entity is Froggy)
+            {
+                (entity as Moveable)?.UpdatePosition(
+                    new Position(entity.Position.x + newPossition, entity.Position.y)
+                );
+            }
+        }
+    }
+
     public bool IsGameOver()
     {
-        return Player.Health == 0;
+        var isGameOver = Player.Health == 0;
+        if (isGameOver)
+        {
+            WorldTimer.Elapsed -= onWorldTimeChangeWrapper;
+        }
+        return isGameOver;
     }
 
     public bool IsGoal()
     {
-        return Player.Position == flag.Position;
+        var isGoal = Player.Position == flag.Position;
+        if (isGoal) {
+            WorldTimer.Elapsed -= onWorldTimeChangeWrapper;
+        }
+        return isGoal;
     }
 }

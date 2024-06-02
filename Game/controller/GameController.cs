@@ -1,4 +1,7 @@
-﻿using Game.constants;
+﻿using Timers = System.Timers;
+
+using Game.constants;
+using Game.model.GameEntity;
 using Game.model.Map;
 using Game.model.World;
 using Game.view;
@@ -11,21 +14,37 @@ internal class GameController(IGameView view, IGameWorld world)
 
     private bool _goal = false;
 
+    private string additionalMessage = "";
+
+    private readonly object _drawMapLock = new object();
+
     internal void Start()
     {
         view.ClearScreen();
-        
+        world.InitWorld(OnWorldTimeChange);
         do
         {
-            view.DrawMap(world.UpdateMap());
-            view.WriteGameInfo(world);
+            DrawWorldWithLock(world.UpdateMap(), additionalMessage);
             HandleMoveCommand(view.GetCommand());
             // Act
             // view.DrawMap(game.UpdateMap());
             // Enemy Action
             // view.DrawMap();
-
         } while (!_gameOver && !_goal);
+    }
+
+    private void OnWorldTimeChange(Object? source, Timers.ElapsedEventArgs e)
+    {
+        // Console.WriteLine("The event was triggered at {0:HH:mm:ss.fff}", e.SignalTime);
+        DrawWorldWithLock(world.UpdateMap(), additionalMessage);
+    }
+
+    private void DrawWorldWithLock(MapHolder map, string msg)
+    {
+        lock (_drawMapLock)
+        {
+            view.DrawWorld(world, map, msg);
+        }
     }
 
     private void HandleMoveCommand(Move move)
@@ -49,7 +68,7 @@ internal class GameController(IGameView view, IGameWorld world)
         }
         catch (InvalidOperationException e) 
         {
-            view.WriteWarningMessage(world.Player, e.Message);
+            additionalMessage = view.GetWarningMessageText(world.Player, e.Message);
         }
     }
 
@@ -58,18 +77,16 @@ internal class GameController(IGameView view, IGameWorld world)
         _gameOver = world.IsGameOver();
         if (_gameOver )
         {
-            view.DrawMap(world.UpdateMap());
-            view.WriteGameInfo(world);
-            view.WriteGameOver();
+            var gameOverMsg = view.GetGameOverText();
+            DrawWorldWithLock(world.UpdateMap(), gameOverMsg);
         }
 
         // TODO When goal use next world if exist do not end game.
         _goal = world.IsGoal();
         if (_goal)
         {
-            view.DrawMap(world.UpdateMap());
-            view.WriteGameInfo(world);
-            view.WriteIsGoal();
+            var isGoalMsg = view.GetIsGoalText();
+            DrawWorldWithLock(world.UpdateMap(), isGoalMsg);
         }
     }
 }

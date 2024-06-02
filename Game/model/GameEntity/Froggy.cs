@@ -1,0 +1,35 @@
+﻿using Game.model.Map;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Game.model.GameEntity;
+
+internal class Froggy(uint id, Position position) : IGameEntity, Moveable, Living
+{
+    public uint Id => id;
+
+    private uint _health = 100;
+    public string Symbol => "🐸";
+
+    public string Name => "Froggy";
+
+    public uint Health
+    {
+        get => _health;
+        set => _health = value;
+    }
+
+    public Position Position
+    {
+        get => position;
+        private set => position = value;
+    }
+
+    public void UpdatePosition(Position newPosition)
+    {
+        Position = newPosition;
+    }
+}

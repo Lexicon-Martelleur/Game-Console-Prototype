@@ -7,23 +7,25 @@ using System.Threading.Tasks;
 using Game.constants;
 using Game.model.GameEntity;
 using Game.model.Map;
+using Game.model.Weapon;
 using Game.model.World;
 
 namespace Game.view;
 
 internal class GameView : IGameView
 {
-    private string[,]? previousDrawnMap;
+    private int _cellWidth = 3;
 
-    private int cellWidth = 3;
-
-    public void DrawMap(MapHolder map)
+    private string[,]? _previousDrawnMap;
+     
+    public void DrawWorld(IGameWorld world, MapHolder map, string msg)
     {
-        if (previousDrawnMap == null)
+        if (_previousDrawnMap == null)
         {
-            previousDrawnMap = new string[map.Height, map.Width];
+            _previousDrawnMap = new string[map.Height, map.Width];
         }
 
+        Console.CursorVisible = false;
         var currBackground = Console.BackgroundColor;
 
         for (int y = 0; y < map.Height; y++)
@@ -31,24 +33,25 @@ internal class GameView : IGameView
             for (int x = 0; x < map.Width; x++)
             {
                 string currentSymbol = GetCellSymbol(map.Cells[y, x]);
-                if (previousDrawnMap[y, x] != currentSymbol)
+                if (_previousDrawnMap[y, x] != currentSymbol)
                 {
-                    Console.SetCursorPosition(x * cellWidth, y);
+                    Console.SetCursorPosition(x * _cellWidth, y);
                     Console.BackgroundColor = map.Cells[y, x].Terrain.Color;
                     Console.Write($"{currentSymbol}");
-                    previousDrawnMap[y, x] = currentSymbol;
+                    _previousDrawnMap[y, x] = currentSymbol;
                 }
             }
         }
 
         Console.BackgroundColor = currBackground;
         Console.SetCursorPosition(0, map.Height);
+        Console.WriteLine(GetGameInfoText(world, msg));
     }
 
     private string GetCellSymbol(Cell cell)
     {
         var artifact = cell.Artifact;
-        return GetConsistentWidth(artifact?.Symbol ?? cell.Terrain.Symbol, cellWidth);
+        return GetConsistentWidth(artifact?.Symbol ?? cell.Terrain.Symbol, _cellWidth);
     }
 
     private string GetConsistentWidth(string content, int width)
@@ -65,6 +68,40 @@ internal class GameView : IGameView
         }
 
         return consistentCellWidth;
+    }
+
+    private string GetGameInfoText(IGameWorld world, string msg)
+    {
+        return $"""
+        {GetHealthInfoText(world)}
+        {GetPlayerPositionText(world.Player)}
+        {GetGoalMessageText(world.Flag)}
+        {msg}
+        """;
+    }
+
+    private string GetHealthInfoText(IGameWorld world)
+    {
+        return GetConsistentWidth(
+            $"❤️ {world.Player.Name} health: {world.Player.Health} {world.GetTerrainInfo()}",
+            100
+        );
+    }
+
+    private string GetPlayerPositionText(Player player)
+    {
+        return GetConsistentWidth(
+            $"{player.Symbol} {player.Name} position: [{player.Position.x}, {player.Position.y}]",
+            100
+        );
+    }
+
+    public string GetGoalMessageText(Flag flag)
+    {
+        return GetConsistentWidth(
+            $"ℹ️ Take the flag at [{flag.Position.x}, {flag.Position.y}] to win",
+            100
+        );
     }
 
     public Move GetCommand()
@@ -87,59 +124,28 @@ internal class GameView : IGameView
         Console.Clear();
     }
 
-    public void WriteGameInfo(IGameWorld world)
+    public string GetWarningMessageText(Player player, string msg)
     {
-        PrintHealthInfo(world);
-        PrintPlayerPosition(world.Player);
-        WriteGoalMessage(world.Flag);
-    }
-
-    private void PrintHealthInfo(IGameWorld world)
-    {
-        Console.WriteLine(GetConsistentWidth(
-            $"❤️ {world.Player.Name} health: {world.Player.Health} {world.GetTerrainInfo()}",
-            100
-        ));
-    }
-
-    private void PrintPlayerPosition(Player player)
-    {
-        Console.WriteLine(GetConsistentWidth(
-            $"{player.Symbol} {player.Name} position: [{player.Position.x}, {player.Position.y}]",
-            100
-        ));
-    }
-
-    public void WriteGoalMessage(Flag flag)
-    {
-        Console.WriteLine(GetConsistentWidth(
-            $"ℹ️ Take the flag at [{flag.Position.x}, {flag.Position.y}] to win",
-            100
-        ));
-    }
-
-    public void WriteWarningMessage(Player player, string msg)
-    {
-        Console.WriteLine(GetConsistentWidth(
+        return GetConsistentWidth(
             $"⚠  {msg}",
             100
-        ));
+        );
     }
 
-    public void WriteGameOver()
+    public string GetGameOverText()
     {
-        Console.WriteLine(GetConsistentWidth(
+        return GetConsistentWidth(
             "⚠  Game over",
             100
-        ));
+        ); 
     }
 
-    public void WriteIsGoal()
+    public string GetIsGoalText()
     {
-        Console.WriteLine(GetConsistentWidth(
+        return GetConsistentWidth(
             "🎉 Congratulation",
             100
-        ));
+        );
     }
 }
 

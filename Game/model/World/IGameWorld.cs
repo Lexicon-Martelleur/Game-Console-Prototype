@@ -1,6 +1,7 @@
 ﻿using Game.model.GameEntity;
 using Game.model.Map;
 
+using Timers = System.Timers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,10 @@ internal interface IGameWorld
     internal Player Player { get; }
 
     internal Flag Flag { get; }
+
+    internal Timers.Timer WorldTimer { get; set; }
+
+    internal void InitWorld(Timers.ElapsedEventHandler onWorldTimeChange);
 
     internal MapHolder UpdateMap();
 
