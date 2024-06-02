@@ -19,7 +19,7 @@ internal class BridgeGameWorld(
 
     private bool _odd = false;
 
-    private Enemy? _fightingEnemy = new Ant(3, new Position(20, 23));
+    private Enemy? _fightingEnemy = null;
 
     private MapHolder? _mapHolder;
 
@@ -42,7 +42,7 @@ internal class BridgeGameWorld(
     }
 
     public IEnumerable<IGameEntity> GameEntities {
-        get => entities;
+        get => entities; //.Append(new Ant(39, new Position(1, 1)));
         private set => entities = value;
     }
   
@@ -151,6 +151,7 @@ internal class BridgeGameWorld(
         return null;
     }
 
+    // TODO Implement equality check
     public void RemoveFightingEnemyFromWorld(Enemy enemy)
     {
         var newEntitites = new List<IGameEntity>();
@@ -165,6 +166,7 @@ internal class BridgeGameWorld(
         FightingEnemy = null;
     }
 
+    // TODO Check if new position contain an enemy entity.
     public void UpdatePlayerPosition(Position position)
     {
         if (!IsValidPosition(position))
@@ -173,6 +175,20 @@ internal class BridgeGameWorld(
         }
         Player.UpdatePosition(position);
         UpdatePlayerHealth(position);
+        FightingEnemy = GetFightingEnemy();
+    }
+
+    private bool IsValidPosition(Position position)
+    {
+        if (IsStoneTerrain(position) ||
+            IsOutsideMap(position))
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
     }
 
     private void UpdatePlayerHealth(Position position)
@@ -204,19 +220,6 @@ internal class BridgeGameWorld(
         }
     }
 
-    private bool IsValidPosition (Position position)
-    {
-        if (IsStoneTerrain(position) ||
-            IsOutsideMap(position))
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
-    }
-
     public void InitWorld(Timers.ElapsedEventHandler onWorldTimeChange)
     {
         onWorldTimeChangeWrapper = (sender, e) =>
@@ -232,11 +235,7 @@ internal class BridgeGameWorld(
     private void UpdateWorld()
     {
         UpdateEnenmies();
-        FightingEnemy = CheckIsFight();
-        //if (FightingEnemy == null)
-        //{
-        //    FightingEnemy = CheckIsFight();
-        //}
+        FightingEnemy = GetFightingEnemy();
     }
 
     private void UpdateEnenmies()
@@ -254,10 +253,10 @@ internal class BridgeGameWorld(
         }
     }
 
-    private Enemy? CheckIsFight()
+    private Enemy? GetFightingEnemy()
     {
         Enemy? enemy = null;
-        foreach (IGameEntity entity in entities)
+        foreach (IGameEntity entity in GameEntities)
         {
             if (entity is Enemy && IsFightPosition(entity))
             {
