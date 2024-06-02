@@ -1,4 +1,5 @@
 ﻿using Game.model.Map;
+using Game.model.Weapon;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Game.model.GameEntity;
 
-internal class Froggy(uint id, Position position) : IGameEntity, Moveable, Living
+internal class Froggy(uint id, Position position) : Enemy
 {
     public uint Id => id;
 
@@ -27,6 +28,8 @@ internal class Froggy(uint id, Position position) : IGameEntity, Moveable, Livin
         get => position;
         private set => position = value;
     }
+
+    IWeapon Enemy.Weapon => new Sword();
 
     public void UpdatePosition(Position newPosition)
     {

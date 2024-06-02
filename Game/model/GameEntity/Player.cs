@@ -5,10 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Game.model.Base;
 using Game.model.Map;
+using Game.model.Weapon;
 
 namespace Game.model.GameEntity;
 
-internal class Player(uint id, Position position) : IGameEntity, Moveable, Living
+internal class Player(uint id, Position position) : Hero
 {
     public uint Id => id;
 
@@ -21,6 +22,13 @@ internal class Player(uint id, Position position) : IGameEntity, Moveable, Livin
         get => _health;
         set => _health = value;
     }
+
+    public IEnumerable<IWeapon> Weapons => [
+        new Hammer(),
+        new Spear(),
+        new Sword(),
+        new Arrow()
+    ];
 
     public Position Position
     {

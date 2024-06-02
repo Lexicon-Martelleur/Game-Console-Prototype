@@ -12,7 +12,7 @@ var flagBridgeGameWorld = new Flag(2, new Position(48, 28));
 var antOneBridgeGameWorld = new Ant(3, new Position(19, 23));
 var antTwoBridgeGameWorld = new Ant(4, new Position(29, 12));
 var antThreeBridgeGameWorld = new Ant(5, new Position(39, 2));
-List<IGameEntity> entitiesBridgeGameWorld = [
+IEnumerable<IGameEntity> entitiesBridgeGameWorld = [
     playerEntity,
     flagBridgeGameWorld,
     antOneBridgeGameWorld,
@@ -29,8 +29,12 @@ var world = new BridgeGameWorld(
 
 // TODO world 3
 
+// Fight
+var fightView = new FightView(30, 50);
+var fightController = new FightController(fightView, world);
+
 // TODO Controller should have a list of worlds
-var gameController = new GameController(view, world);
+var gameController = new GameController(view, world, fightController);
 
 gameController.Start();
 

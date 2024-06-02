@@ -23,4 +23,6 @@ internal interface IGameView
     internal string GetWarningMessageText(Player player, string msg);
 
     internal string GetIsGoalText();
+
+    internal void PrintMatchInfo(IGameWorld world, Enemy enemy);
 }

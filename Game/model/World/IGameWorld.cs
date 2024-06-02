@@ -7,14 +7,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Game.model.Weapon;
 
 namespace Game.model.World;
 
+// TODO! Divide in factory (WorldFactory) and Service (WorldService)
 internal interface IGameWorld
 {
     internal Player Player { get; }
 
     internal Flag Flag { get; }
+
+    internal Enemy? FightingEnemy { get; }
+
+    internal IEnumerable<IGameEntity> GameEntities { get; }
 
     internal Timers.Timer WorldTimer { get; set; }
 
@@ -24,9 +30,15 @@ internal interface IGameWorld
 
     internal void UpdatePlayerPosition(Position position);
 
+    internal void UpdateEntityHealth(Living entity, IWeapon weapon);
+
+    internal void RemoveFightingEnemyFromWorld(Enemy enemy);
+
     internal bool IsGameOver();
 
     internal bool IsGoal();
 
     internal string GetTerrainInfo();
+
+    internal void CloseWorld();
 }

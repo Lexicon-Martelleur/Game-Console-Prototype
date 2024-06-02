@@ -3,13 +3,14 @@ using Game.model.GameEntity;
 using Game.model.Map;
 using Game.model.terrain;
 using System.Timers;
+using Game.model.Weapon;
 
 namespace Game.model.World;
 
 internal class BridgeGameWorld(
     Player player,
     Flag flag,
-    List<IGameEntity> entities) : IGameWorld
+    IEnumerable<IGameEntity> entities) : IGameWorld
 {
 
     private readonly int _height = 30;
@@ -17,6 +18,8 @@ internal class BridgeGameWorld(
     private readonly int _width = 50;
 
     private bool _odd = false;
+
+    private Enemy? _fightingEnemy = new Ant(3, new Position(20, 23));
 
     private MapHolder? _mapHolder;
 
@@ -33,9 +36,19 @@ internal class BridgeGameWorld(
 
     public Flag Flag { get => flag; }
 
+    public Enemy? FightingEnemy { 
+        get => _fightingEnemy;
+        private set => _fightingEnemy = value;
+    }
+
+    public IEnumerable<IGameEntity> GameEntities {
+        get => entities;
+        private set => entities = value;
+    }
+  
     public MapHolder UpdateMap()
     {
-        _mapHolder = new MapHolder(_height, _width, DrawMap(GetGameEntities()));
+        _mapHolder = new MapHolder(_height, _width, DrawMap(GameEntities));
         return _mapHolder;
     }
 
@@ -51,11 +64,6 @@ internal class BridgeGameWorld(
             $" {cliff.Symbol} = -{cliff.ReduceHealth()})";
     }
 
-    internal IEnumerable<IGameEntity> GetGameEntities()
-    {
-        return entities;
-    }
-
     internal Cell[,] DrawMap(IEnumerable<IGameEntity> entities)
     {
         var cells = new Cell[_height, _width];
@@ -69,7 +77,7 @@ internal class BridgeGameWorld(
                 cells[y, x] = new Cell(
                     position,
                     terrain,
-                    GetArtifactForPosition(entities, position)
+                    GetEntityAtPosition(entities, position)
                 );
             }
 
@@ -121,7 +129,15 @@ internal class BridgeGameWorld(
         return (position.x == 40 || position.x == 41) && position.y != 2;
     }
 
-    private IGameEntity? GetArtifactForPosition(
+    private bool IsOutsideMap(Position position)
+    {
+        return (position.x < 0 ||
+            position.x >= _width ||
+            position.y < 0 ||
+            position.y >= _height);
+    }
+
+    private IGameEntity? GetEntityAtPosition(
         IEnumerable<IGameEntity> entities,
         Position position)
     {
@@ -133,6 +149,20 @@ internal class BridgeGameWorld(
             }
         }
         return null;
+    }
+
+    public void RemoveFightingEnemyFromWorld(Enemy enemy)
+    {
+        var newEntitites = new List<IGameEntity>();
+        foreach (var entity in GameEntities)
+        {
+            if (entity.Id != enemy.Id)
+            {
+                newEntitites.Add(entity);
+            }
+        };
+        GameEntities = newEntitites;
+        FightingEnemy = null;
     }
 
     public void UpdatePlayerPosition(Position position)
@@ -162,13 +192,22 @@ internal class BridgeGameWorld(
         }
     }
 
+    public void UpdateEntityHealth(Living entity, IWeapon weapon)
+    {
+        if (entity.Health < weapon.ReduceHealth)
+        {
+            entity.Health = 0;
+        }
+        else
+        {
+            entity.Health = entity.Health - weapon.ReduceHealth;
+        }
+    }
+
     private bool IsValidPosition (Position position)
     {
         if (IsStoneTerrain(position) ||
-            position.x < 0 ||
-            position.x >= _width ||
-            position.y < 0 ||
-            position.y >= _height)
+            IsOutsideMap(position))
         {
             return false;
         }
@@ -192,11 +231,21 @@ internal class BridgeGameWorld(
 
     private void UpdateWorld()
     {
+        UpdateEnenmies();
+        FightingEnemy = CheckIsFight();
+        //if (FightingEnemy == null)
+        //{
+        //    FightingEnemy = CheckIsFight();
+        //}
+    }
+
+    private void UpdateEnenmies()
+    {
         var newPossition = _odd ? -1 : 1;
         _odd = !_odd;
         foreach (IGameEntity entity in entities)
         {
-            if (entity is Ant || entity is Froggy)
+            if (entity is Enemy)
             {
                 (entity as Moveable)?.UpdatePosition(
                     new Position(entity.Position.x + newPossition, entity.Position.y)
@@ -205,12 +254,31 @@ internal class BridgeGameWorld(
         }
     }
 
+    private Enemy? CheckIsFight()
+    {
+        Enemy? enemy = null;
+        foreach (IGameEntity entity in entities)
+        {
+            if (entity is Enemy && IsFightPosition(entity))
+            {
+                enemy = entity as Enemy;
+                break;
+            }
+        };
+        return enemy;
+    }
+
+    private bool IsFightPosition(IGameEntity entity)
+    {
+        return entity.Position == Player.Position;
+    }
+
     public bool IsGameOver()
     {
         var isGameOver = Player.Health == 0;
         if (isGameOver)
         {
-            WorldTimer.Elapsed -= onWorldTimeChangeWrapper;
+            CloseWorld();
         }
         return isGameOver;
     }
@@ -219,8 +287,14 @@ internal class BridgeGameWorld(
     {
         var isGoal = Player.Position == flag.Position;
         if (isGoal) {
-            WorldTimer.Elapsed -= onWorldTimeChangeWrapper;
+            CloseWorld();
         }
         return isGoal;
+    }
+
+    public void CloseWorld()
+    {
+        WorldTimer.Elapsed -= onWorldTimeChangeWrapper;
+        WorldTimer.Close();  
     }
 }

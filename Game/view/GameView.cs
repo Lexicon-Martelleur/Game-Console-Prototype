@@ -25,7 +25,6 @@ internal class GameView : IGameView
             _previousDrawnMap = new string[map.Height, map.Width];
         }
 
-        Console.CursorVisible = false;
         var currBackground = Console.BackgroundColor;
 
         for (int y = 0; y < map.Height; y++)
@@ -99,7 +98,7 @@ internal class GameView : IGameView
     public string GetGoalMessageText(Flag flag)
     {
         return GetConsistentWidth(
-            $"ℹ️ Take the flag at [{flag.Position.x}, {flag.Position.y}] to win",
+            $"ℹ️ Take the flag {flag.Symbol} at [{flag.Position.x}, {flag.Position.y}] to win",
             100
         );
     }
@@ -122,6 +121,7 @@ internal class GameView : IGameView
     public void ClearScreen()
     {
         Console.Clear();
+        _previousDrawnMap = null;
     }
 
     public string GetWarningMessageText(Player player, string msg)
@@ -146,6 +146,26 @@ internal class GameView : IGameView
             "🎉 Congratulation",
             100
         );
+    }
+
+    public void PrintMatchInfo(IGameWorld world, Enemy enemy)
+    {
+        ClearScreen();
+        var player = world.Player;
+        var playerWeapons = new StringBuilder();
+        foreach (var weapon in player.Weapons)
+        {
+            playerWeapons.Append($"[{weapon.Name} {weapon.Symbol}]");
+        }
+        var matchInfo = $"""
+            Fight: {player.Name} {player.Symbol} vs {enemy.Name} {enemy.Symbol}
+                * {player.Name} {player.Symbol} health: {player.Health}
+                * {player.Name} {player.Symbol} weapon: {playerWeapons}
+                * {enemy.Name} {enemy.Symbol} health: {player.Health}
+                * {enemy.Name} {enemy.Symbol} weapon: {enemy.Weapon.Name} {enemy.Weapon.Symbol}
+            Press enter to start the fight
+        """;
+        Console.WriteLine(matchInfo);
     }
 }
 

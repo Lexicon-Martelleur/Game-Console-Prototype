@@ -5,14 +5,25 @@ using Game.model.GameEntity;
 using Game.model.Map;
 using Game.model.World;
 using Game.view;
+using System;
+using System.Diagnostics.Tracing;
+using Game.Events;
 
 namespace Game.controller;
 
-internal class GameController(IGameView view, IGameWorld world)
+internal class GameController(
+    IGameView view,
+    IGameWorld world,
+    FightController fightController)
 {
+    // Capture the synchronization context of the main thread
+    private SynchronizationContext _syncContext = SynchronizationContext.Current ?? new SynchronizationContext();
+
     private bool _gameOver = false;
 
     private bool _goal = false;
+
+    private Enemy? _existingEnemy = null;
 
     private string additionalMessage = "";
 
@@ -20,23 +31,53 @@ internal class GameController(IGameView view, IGameWorld world)
 
     internal void Start()
     {
+        SynchronizationContext.SetSynchronizationContext(_syncContext);
         view.ClearScreen();
         world.InitWorld(OnWorldTimeChange);
         do
         {
-            DrawWorldWithLock(world.UpdateMap(), additionalMessage);
-            HandleMoveCommand(view.GetCommand());
-            // Act
-            // view.DrawMap(game.UpdateMap());
-            // Enemy Action
-            // view.DrawMap();
+            if (_existingEnemy != null)
+            {
+                FightExistingEnemy(_existingEnemy);
+                world.RemoveFightingEnemyFromWorld(_existingEnemy);
+                _existingEnemy = null;
+                world.InitWorld(OnWorldTimeChange);
+                view.ClearScreen();
+                DrawWorldWithLock(world.UpdateMap(), additionalMessage);
+                HandleMoveCommand(view.GetCommand());
+                
+            }
+            else { 
+               DrawWorldWithLock(world.UpdateMap(), additionalMessage);
+               HandleMoveCommand(view.GetCommand());
+            }
+
         } while (!_gameOver && !_goal);
     }
 
     private void OnWorldTimeChange(Object? source, Timers.ElapsedEventArgs e)
     {
-        // Console.WriteLine("The event was triggered at {0:HH:mm:ss.fff}", e.SignalTime);
-        DrawWorldWithLock(world.UpdateMap(), additionalMessage);
+        var worldEnemy = world.FightingEnemy;
+        if (worldEnemy != null)
+        {
+            var args = new WorldEventArgs<Enemy>(e.SignalTime, worldEnemy);
+            _syncContext.Post(_ => HandleEnemyFightEvent(args), null);
+        } else
+        {
+            DrawWorldWithLock(world.UpdateMap(), additionalMessage);
+        }
+    }
+
+    private void HandleEnemyFightEvent(WorldEventArgs<Enemy> e)
+    {
+        _existingEnemy = e.Data;
+        world.CloseWorld();
+        view.PrintMatchInfo(world, e.Data); 
+    }
+
+    private void FightExistingEnemy(Enemy enemy)
+    {
+        fightController.StartFight(world.Player, enemy);   
     }
 
     private void DrawWorldWithLock(MapHolder map, string msg)

@@ -12,4 +12,5 @@ internal interface IGameArtefact
     internal string Symbol { get; }
 
     internal string Name { get; }
+
 }
