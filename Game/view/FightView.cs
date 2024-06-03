@@ -13,7 +13,7 @@ internal class FightView(int height, int width)
 
     internal void DrawFight(
         Player player,
-        Enemy enemy)
+        IEnemy enemy)
     {
 
         var currBackground = Console.BackgroundColor;
@@ -56,7 +56,7 @@ internal class FightView(int height, int width)
         ));
     }
 
-    private string GetSymbol(int x, int y, Player player, Enemy enemy)
+    private string GetSymbol(int x, int y, Player player, IEnemy enemy)
     {
         var playerYPosition = height / 2;
         var playerXPositionfirst = (width / 4) * 1;

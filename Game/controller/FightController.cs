@@ -8,7 +8,7 @@ namespace Game.controller;
 
 internal class FightController(FightView view, IGameWorld world)
 {
-    internal void StartFight(Player player, Enemy enemy)
+    internal void StartFight(Player player, IEnemy enemy)
     {
         bool fightIsOver = false;
         view.ClearScreen();
@@ -31,7 +31,7 @@ internal class FightController(FightView view, IGameWorld world)
         return weapon.ReduceHealth;
     }
 
-    private bool IsFightOver(Player player, Enemy enemy) 
+    private bool IsFightOver(Player player, IEnemy enemy) 
     {
         return player.Health == 0 || enemy.Health == 0;
     }

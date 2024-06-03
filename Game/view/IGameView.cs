@@ -24,5 +24,5 @@ internal interface IGameView
 
     internal string GetIsGoalText();
 
-    internal void PrintMatchInfo(IGameWorld world, Enemy enemy);
+    internal void WriteFightInfo(IGameWorld world, IEnemy enemy, bool waitForUserInput);
 }

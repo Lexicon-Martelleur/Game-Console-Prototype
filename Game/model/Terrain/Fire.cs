@@ -5,7 +5,7 @@ using Game.model.Terrain;
 
 namespace Game.model.terrain;
 
-internal class Fire : DangerousTerrain
+internal class Fire : IDangerousTerrain
 {
     public string Name => "Fire";
 

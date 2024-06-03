@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Game.model.terrain;
 
-internal class Cliff : DangerousTerrain
+internal class Cliff : IDangerousTerrain
 {
     public string Name => "Cliff";
 

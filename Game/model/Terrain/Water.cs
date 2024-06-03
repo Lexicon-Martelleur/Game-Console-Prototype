@@ -3,7 +3,7 @@ using Game.model.Terrain;
 
 namespace Game.model.terrain
 {
-    internal class Water : DangerousTerrain
+    internal class Water : IDangerousTerrain
     {
         public string Name => "Water";
 

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Game.model.GameEntity;
 
-internal class Froggy(uint id, Position position) : Enemy
+internal class Froggy(uint id, Position position) : IEnemy
 {
     public uint Id => id;
 
@@ -29,7 +29,7 @@ internal class Froggy(uint id, Position position) : Enemy
         private set => position = value;
     }
 
-    IWeapon Enemy.Weapon => new Sword();
+    IWeapon IEnemy.Weapon => new Sword();
 
     public void UpdatePosition(Position newPosition)
     {

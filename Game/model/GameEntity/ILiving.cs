@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Game.model.GameEntity;
 
-internal interface Living
+internal interface ILiving
 {
     uint Health { get; set; }
 }

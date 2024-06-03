@@ -19,7 +19,7 @@ internal class BridgeGameWorld(
 
     private bool _odd = false;
 
-    private Enemy? _fightingEnemy = null;
+    private IEnemy? _fightingEnemy = null;
 
     private MapHolder? _mapHolder;
 
@@ -36,13 +36,13 @@ internal class BridgeGameWorld(
 
     public Flag Flag { get => flag; }
 
-    public Enemy? FightingEnemy { 
+    public IEnemy? FightingEnemy { 
         get => _fightingEnemy;
         private set => _fightingEnemy = value;
     }
 
     public IEnumerable<IGameEntity> GameEntities {
-        get => entities; //.Append(new Ant(39, new Position(1, 1)));
+        get => entities;
         private set => entities = value;
     }
   
@@ -72,7 +72,7 @@ internal class BridgeGameWorld(
             for (int x = 0; x < _width; x++)
             {
                 Position position = new Position(x, y);
-                ITerrain terrain = GetPositionTerrain(position);
+                ITerrain terrain = GetTerrainAtPosition(position);
 
                 cells[y, x] = new Cell(
                     position,
@@ -85,7 +85,7 @@ internal class BridgeGameWorld(
         return cells;
     }
 
-    private ITerrain GetPositionTerrain(Position position)
+    private ITerrain GetTerrainAtPosition(Position position)
     {
         if (IsCliffTerrain(position))
         {
@@ -152,7 +152,7 @@ internal class BridgeGameWorld(
     }
 
     // TODO Implement equality check
-    public void RemoveFightingEnemyFromWorld(Enemy enemy)
+    public void RemoveFightingEnemyFromWorld(IEnemy enemy)
     {
         var newEntitites = new List<IGameEntity>();
         foreach (var entity in GameEntities)
@@ -208,7 +208,7 @@ internal class BridgeGameWorld(
         }
     }
 
-    public void UpdateEntityHealth(Living entity, IWeapon weapon)
+    public void UpdateEntityHealth(ILiving entity, IWeapon weapon)
     {
         if (entity.Health < weapon.ReduceHealth)
         {
@@ -234,33 +234,33 @@ internal class BridgeGameWorld(
 
     private void UpdateWorld()
     {
-        UpdateEnenmies();
+        UpdateEnenmiesPositions();
         FightingEnemy = GetFightingEnemy();
     }
 
-    private void UpdateEnenmies()
+    private void UpdateEnenmiesPositions()
     {
         var newPossition = _odd ? -1 : 1;
         _odd = !_odd;
         foreach (IGameEntity entity in entities)
         {
-            if (entity is Enemy)
+            if (entity is IEnemy)
             {
-                (entity as Moveable)?.UpdatePosition(
+                (entity as IEnemy)?.UpdatePosition(
                     new Position(entity.Position.x + newPossition, entity.Position.y)
                 );
             }
         }
     }
 
-    private Enemy? GetFightingEnemy()
+    private IEnemy? GetFightingEnemy()
     {
-        Enemy? enemy = null;
+        IEnemy? enemy = null;
         foreach (IGameEntity entity in GameEntities)
         {
-            if (entity is Enemy && IsFightPosition(entity))
+            if (entity is IEnemy && IsFightPosition(entity))
             {
-                enemy = entity as Enemy;
+                enemy = entity as IEnemy;
                 break;
             }
         };

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Game.model.Terrain;
 
-internal interface DangerousTerrain : ITerrain
+internal interface IDangerousTerrain : ITerrain
 {
     internal uint ReduceHealth();
 }

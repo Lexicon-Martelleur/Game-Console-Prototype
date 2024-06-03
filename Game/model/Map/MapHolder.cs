@@ -20,7 +20,7 @@ internal class MapHolder
         Cells = cells;
     }
 
-    internal DangerousTerrain? GetDangerousTerrain(Position position)
+    internal IDangerousTerrain? GetDangerousTerrain(Position position)
     {
         Cell? findCell = null;
         foreach (Cell cell in Cells)
@@ -32,6 +32,6 @@ internal class MapHolder
             }
         }
         var terrain = findCell?.Terrain;
-        return terrain as DangerousTerrain;
+        return terrain as IDangerousTerrain;
     }
 }

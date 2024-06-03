@@ -7,7 +7,7 @@ using Game.model.Map;
 
 namespace Game.model.GameEntity;
 
-internal interface Moveable
+internal interface IMoveable
 {
     internal void UpdatePosition(Position newPosition);
 }

@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 
 namespace Game.model.GameEntity
 {
-    internal interface Hero : IGameEntity, Moveable, Living
+    internal interface IEnemy : IGameEntity, IMoveable, ILiving
     {
-        IEnumerable<IWeapon> Weapons { get; }
+        IWeapon Weapon { get; }
     }
+
 }

@@ -18,7 +18,7 @@ internal interface IGameWorld
 
     internal Flag Flag { get; }
 
-    internal Enemy? FightingEnemy { get; }
+    internal IEnemy? FightingEnemy { get; }
 
     internal IEnumerable<IGameEntity> GameEntities { get; }
 
@@ -30,9 +30,9 @@ internal interface IGameWorld
 
     internal void UpdatePlayerPosition(Position position);
 
-    internal void UpdateEntityHealth(Living entity, IWeapon weapon);
+    internal void UpdateEntityHealth(ILiving entity, IWeapon weapon);
 
-    internal void RemoveFightingEnemyFromWorld(Enemy enemy);
+    internal void RemoveFightingEnemyFromWorld(IEnemy enemy);
 
     internal bool IsGameOver();
 

@@ -148,7 +148,7 @@ internal class GameView : IGameView
         );
     }
 
-    public void PrintMatchInfo(IGameWorld world, Enemy enemy)
+    public void WriteFightInfo(IGameWorld world, IEnemy enemy, bool waitForUserInput)
     {
         ClearScreen();
         var player = world.Player;
@@ -166,6 +166,10 @@ internal class GameView : IGameView
             Press enter to start the fight
         """;
         Console.WriteLine(matchInfo);
+        if (waitForUserInput) 
+        {
+            Console.ReadLine();
+        }
     }
 }
 

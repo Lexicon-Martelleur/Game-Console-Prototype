@@ -9,7 +9,7 @@ using Game.model.Weapon;
 
 namespace Game.model.GameEntity;
 
-internal class Player(uint id, Position position) : Hero
+internal class Player(uint id, Position position) : IHero
 {
     public uint Id => id;
 

@@ -16,14 +16,14 @@ internal class GameController(
     IGameWorld world,
     FightController fightController)
 {
-    // Capture the synchronization context of the main thread
+    // Used to capture the synchronization context of the main thread
     private SynchronizationContext _syncContext = SynchronizationContext.Current ?? new SynchronizationContext();
 
     private bool _gameOver = false;
 
     private bool _goal = false;
 
-    private Enemy? _existingEnemy = null;
+    private IEnemy? _existingEnemy = null;
 
     private string additionalMessage = "";
 
@@ -39,45 +39,23 @@ internal class GameController(
             if (_existingEnemy != null)
             {
                 FightExistingEnemy(_existingEnemy);
-                world.RemoveFightingEnemyFromWorld(_existingEnemy);
-                _existingEnemy = null;
-                world.InitWorld(OnWorldTimeChange);
-                view.ClearScreen();
-                DrawWorldWithLock(world.UpdateMap(), additionalMessage);
-                HandleMoveCommand(view.GetCommand());
-                
             }
-            else { 
-               DrawWorldWithLock(world.UpdateMap(), additionalMessage);
-               HandleMoveCommand(view.GetCommand());
-            }
-
+            DrawWorldWithLock(world.UpdateMap(), additionalMessage);
+            HandleMoveCommand(view.GetCommand());
         } while (!_gameOver && !_goal);
     }
 
     private void OnWorldTimeChange(Object? source, Timers.ElapsedEventArgs e)
     {
         var worldEnemy = world.FightingEnemy;
-        if (worldEnemy != null)
-        {
-            var args = new WorldEventArgs<Enemy>(e.SignalTime, worldEnemy);
-            _syncContext.Post(_ => HandleEnemyFightEvent(args), null);
-        } else
+        if (worldEnemy == null)
         {
             DrawWorldWithLock(world.UpdateMap(), additionalMessage);
+        } else
+        {
+            var args = new WorldEventArgs<IEnemy>(e.SignalTime, worldEnemy);
+            _syncContext.Post(_ => HandleEnemyFightEvent(args), null);
         }
-    }
-
-    private void HandleEnemyFightEvent(WorldEventArgs<Enemy> e)
-    {
-        _existingEnemy = e.Data;
-        world.CloseWorld();
-        view.PrintMatchInfo(world, e.Data); 
-    }
-
-    private void FightExistingEnemy(Enemy enemy)
-    {
-        fightController.StartFight(world.Player, enemy);   
     }
 
     private void DrawWorldWithLock(MapHolder map, string msg)
@@ -86,6 +64,21 @@ internal class GameController(
         {
             view.DrawWorld(world, map, msg);
         }
+    }
+
+    private void HandleEnemyFightEvent(WorldEventArgs<IEnemy> e)
+    {
+        _existingEnemy = e.Data;
+        HandleGameState();
+    }
+
+    private void FightExistingEnemy(IEnemy enemy)
+    {
+        fightController.StartFight(world.Player, enemy);
+        world.RemoveFightingEnemyFromWorld(enemy);
+        _existingEnemy = null;
+        world.InitWorld(OnWorldTimeChange);
+        view.ClearScreen();
     }
 
     private void HandleMoveCommand(Move move)
@@ -105,7 +98,8 @@ internal class GameController(
         try
         {
             world.UpdatePlayerPosition(nextPosition);
-            HandleGameState();
+            bool waitForUserInput = true;
+            HandleGameState(waitForUserInput);
         }
         catch (InvalidOperationException e) 
         {
@@ -113,7 +107,8 @@ internal class GameController(
         }
     }
 
-    private void HandleGameState()
+    // Use out key word here in implementation and caller.
+    private void HandleGameState(bool waitForUserInput = false)
     {
         _gameOver = world.IsGameOver();
         if (_gameOver )
@@ -129,5 +124,16 @@ internal class GameController(
             var isGoalMsg = view.GetIsGoalText();
             DrawWorldWithLock(world.UpdateMap(), isGoalMsg);
         }
+        _existingEnemy = world.FightingEnemy;
+        if (_existingEnemy != null)
+        {
+            SetupFightInfoState(_existingEnemy, waitForUserInput);
+        }
+    }
+
+    private void SetupFightInfoState(IEnemy enemy, bool waitForUserInput)
+    {
+        world.CloseWorld();
+        view.WriteFightInfo(world, enemy, waitForUserInput);
     }
 }
