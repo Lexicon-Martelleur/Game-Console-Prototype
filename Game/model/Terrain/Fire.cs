@@ -1,9 +1,6 @@
 ﻿using Game.constants;
-using Game.model.GameEntity;
-using Game.model.Map;
-using Game.model.Terrain;
 
-namespace Game.model.terrain;
+namespace Game.Model.Terrain;
 
 internal class Fire : IDangerousTerrain
 {

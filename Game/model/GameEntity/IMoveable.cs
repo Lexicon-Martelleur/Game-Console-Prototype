@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Game.model.Map;
+﻿using Game.Model.Map;
 
-namespace Game.model.GameEntity;
+namespace Game.Model.GameEntity;
 
 internal interface IMoveable
 {

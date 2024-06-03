@@ -1,13 +1,7 @@
-﻿using Game.model.Base;
-using Game.model.Map;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Game.Model.Base;
+using Game.Model.Map;
 
-namespace Game.model.GameEntity;
+namespace Game.Model.GameEntity;
 
 internal interface IGameEntity : IGameArtefact
 {

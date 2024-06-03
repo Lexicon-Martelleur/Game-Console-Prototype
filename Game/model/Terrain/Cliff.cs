@@ -1,12 +1,6 @@
 ﻿using Game.constants;
-using Game.model.Terrain;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Game.model.terrain;
+namespace Game.Model.Terrain;
 
 internal class Cliff : IDangerousTerrain
 {

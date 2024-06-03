@@ -1,6 +1,6 @@
 ﻿using Game.constants;
-using Game.model.GameEntity;
-using Game.model.Map;
+using Game.Model.GameEntity;
+using Game.Model.Map;
 using System.Text;
 
 namespace Game.view;
@@ -12,7 +12,7 @@ internal class FightView(int height, int width)
     private int _cellWidth = 3;
 
     internal void DrawFight(
-        Player player,
+        Hero player,
         IEnemy enemy)
     {
 
@@ -56,7 +56,7 @@ internal class FightView(int height, int width)
         ));
     }
 
-    private string GetSymbol(int x, int y, Player player, IEnemy enemy)
+    private string GetSymbol(int x, int y, Hero player, IEnemy enemy)
     {
         var playerYPosition = height / 2;
         var playerXPositionfirst = (width / 4) * 1;
@@ -93,7 +93,7 @@ internal class FightView(int height, int width)
         return consistentCellWidth;
     }
 
-    internal string ReadWeapon(Player player)
+    internal string ReadWeapon(Hero player)
     {
         var weapons = new StringBuilder();
         foreach (var weapon in player.Weapons)

@@ -1,12 +1,7 @@
-﻿using Game.model.Map;
-using Game.model.Weapon;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Game.Model.Map;
+using Game.Model.Weapon;
 
-namespace Game.model.GameEntity;
+namespace Game.Model.GameEntity;
 
 internal class Ant(uint id, Position position) : IEnemy
 {

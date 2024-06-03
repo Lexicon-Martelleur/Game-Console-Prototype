@@ -1,13 +1,12 @@
 ﻿using Game.constants;
 
-namespace Game.model.terrain
+namespace Game.Model.Terrain;
+
+internal class Stone : ITerrain
 {
-    internal class Stone : ITerrain
-    {
-        public string Name => "Stone";
+    public string Name => "Stone";
 
-        public ConsoleColor Color => ColorSpectrum.Stone;
+    public ConsoleColor Color => ColorSpectrum.Stone;
 
-        public string Symbol => "🪨";
-    }
+    public string Symbol => "🪨";
 }

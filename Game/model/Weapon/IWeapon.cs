@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Game.model.Base;
+﻿using Game.Model.Base;
 
-namespace Game.model.Weapon;
+namespace Game.Model.Weapon;
 
 internal interface IWeapon : IGameArtefact
 {

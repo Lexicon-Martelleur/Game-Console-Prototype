@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
 using Game.constants;
-using Game.model.GameEntity;
-using Game.model.Map;
-using Game.model.Weapon;
-using Game.model.World;
+using Game.Model.GameEntity;
+using Game.Model.Map;
+using Game.Constants;
+using Game.Model.World;
 
 namespace Game.view;
 
@@ -17,8 +13,13 @@ internal class GameView : IGameView
     private int _cellWidth = 3;
 
     private string[,]? _previousDrawnMap;
-     
-    public void DrawWorld(IGameWorld world, MapHolder map, string msg)
+
+    internal GameView()
+    {
+        Console.Title = ConsoleGame.NAME;
+    }
+
+    public void DrawWorld(IWorldService world, WorldMap map, string msg)
     {
         if (_previousDrawnMap == null)
         {
@@ -69,7 +70,7 @@ internal class GameView : IGameView
         return consistentCellWidth;
     }
 
-    private string GetGameInfoText(IGameWorld world, string msg)
+    private string GetGameInfoText(IWorldService world, string msg)
     {
         return $"""
         {GetHealthInfoText(world)}
@@ -79,7 +80,7 @@ internal class GameView : IGameView
         """;
     }
 
-    private string GetHealthInfoText(IGameWorld world)
+    private string GetHealthInfoText(IWorldService world)
     {
         return GetConsistentWidth(
             $"❤️ {world.Player.Name} health: {world.Player.Health} {world.GetTerrainInfo()}",
@@ -87,10 +88,11 @@ internal class GameView : IGameView
         );
     }
 
-    private string GetPlayerPositionText(Player player)
+    private string GetPlayerPositionText(Hero player)
     {
         return GetConsistentWidth(
-            $"{player.Symbol} {player.Name} position: [{player.Position.x}, {player.Position.y}]",
+            $"{player.Symbol} {player.Name} position: [{player.Position.x}, {player.Position.y}]" +
+            $" (UP={ConsoleKey.UpArrow}; Right={ConsoleKey.RightArrow}; Down={ConsoleKey.DownArrow}; Left={ConsoleKey.LeftArrow})",
             100
         );
     }
@@ -98,7 +100,7 @@ internal class GameView : IGameView
     public string GetGoalMessageText(Flag flag)
     {
         return GetConsistentWidth(
-            $"ℹ️ Take the flag {flag.Symbol} at [{flag.Position.x}, {flag.Position.y}] to win",
+            $"ℹ️ World Task: Take the flag {flag.Symbol} at [{flag.Position.x}, {flag.Position.y}] to win",
             100
         );
     }
@@ -124,7 +126,7 @@ internal class GameView : IGameView
         _previousDrawnMap = null;
     }
 
-    public string GetWarningMessageText(Player player, string msg)
+    public string GetWarningMessageText(Hero player, string msg)
     {
         return GetConsistentWidth(
             $"⚠  {msg}",
@@ -148,7 +150,7 @@ internal class GameView : IGameView
         );
     }
 
-    public void WriteFightInfo(IGameWorld world, IEnemy enemy, bool waitForUserInput)
+    public void WriteFightInfo(IWorldService world, IEnemy enemy, bool waitForUserInput)
     {
         ClearScreen();
         var player = world.Player;

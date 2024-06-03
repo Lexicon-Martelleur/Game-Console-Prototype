@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Game.constants;
 
-namespace Game.constants
+internal enum Move
 {
-    internal enum Move
-    {
-        UP,
-        RIGHT,
-        DOWN,
-        LEFT,
-        NONE
-    }
+    UP,
+    RIGHT,
+    DOWN,
+    LEFT,
+    NONE
 }

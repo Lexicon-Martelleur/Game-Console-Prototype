@@ -1,24 +1,19 @@
 ﻿using Timers = System.Timers;
 
 using Game.constants;
-using Game.model.GameEntity;
-using Game.model.Map;
-using Game.model.World;
+using Game.Model.GameEntity;
+using Game.Model.Map;
+using Game.Model.World;
 using Game.view;
-using System;
-using System.Diagnostics.Tracing;
 using Game.Events;
 
-namespace Game.controller;
+namespace Game.Controller;
 
 internal class GameController(
     IGameView view,
-    IGameWorld world,
+    IWorldService world,
     FightController fightController)
 {
-    // Used to capture the synchronization context of the main thread
-    private SynchronizationContext _syncContext = SynchronizationContext.Current ?? new SynchronizationContext();
-
     private bool _gameOver = false;
 
     private bool _goal = false;
@@ -29,9 +24,14 @@ internal class GameController(
 
     private readonly object _drawMapLock = new object();
 
+    // Used to capture the synchronization context of the main thread.
+    private SynchronizationContext _syncronizationContext =
+        SynchronizationContext.Current ??
+        new SynchronizationContext();
+
     internal void Start()
     {
-        SynchronizationContext.SetSynchronizationContext(_syncContext);
+        SynchronizationContext.SetSynchronizationContext(_syncronizationContext);
         view.ClearScreen();
         world.InitWorld(OnWorldTimeChange);
         do
@@ -40,7 +40,7 @@ internal class GameController(
             {
                 FightExistingEnemy(_existingEnemy);
             }
-            DrawWorldWithLock(world.UpdateMap(), additionalMessage);
+            DrawWorldWithLock(world.GetWorldSnapShot(), additionalMessage);
             HandleMoveCommand(view.GetCommand());
         } while (!_gameOver && !_goal);
     }
@@ -50,15 +50,15 @@ internal class GameController(
         var worldEnemy = world.FightingEnemy;
         if (worldEnemy == null)
         {
-            DrawWorldWithLock(world.UpdateMap(), additionalMessage);
+            DrawWorldWithLock(world.GetWorldSnapShot(), additionalMessage);
         } else
         {
             var args = new WorldEventArgs<IEnemy>(e.SignalTime, worldEnemy);
-            _syncContext.Post(_ => HandleEnemyFightEvent(args), null);
+            _syncronizationContext.Post(_ => HandleEnemyFightEvent(args), null);
         }
     }
 
-    private void DrawWorldWithLock(MapHolder map, string msg)
+    private void DrawWorldWithLock(WorldMap map, string msg)
     {
         lock (_drawMapLock)
         {
@@ -75,29 +75,21 @@ internal class GameController(
     private void FightExistingEnemy(IEnemy enemy)
     {
         fightController.StartFight(world.Player, enemy);
-        world.RemoveFightingEnemyFromWorld(enemy);
-        _existingEnemy = null;
-        world.InitWorld(OnWorldTimeChange);
-        view.ClearScreen();
+        
+        if (!world.IsGameOver(out _gameOver))
+        {
+            world.RemoveFightingEnemyFromWorld(enemy);
+            _existingEnemy = null;
+            world.InitWorld(OnWorldTimeChange);
+            view.ClearScreen();
+        }
     }
 
     private void HandleMoveCommand(Move move)
     {
-        var prevPosition = world.Player.Position;
-        int nextY = prevPosition.y;
-        int nextX = prevPosition.x;
-        switch (move)
-        {
-            case Move.UP: nextY--; break;
-            case Move.RIGHT: nextX++; break;
-            case Move.DOWN: nextY++; break;
-            case Move.LEFT: nextX--; break;
-            default: break;
-        }
-        var nextPosition = new Position(nextX, nextY);
         try
         {
-            world.UpdatePlayerPosition(nextPosition);
+            world.MovePlayerToNextPosition(move);
             bool waitForUserInput = true;
             HandleGameState(waitForUserInput);
         }
@@ -107,23 +99,21 @@ internal class GameController(
         }
     }
 
-    // Use out key word here in implementation and caller.
     private void HandleGameState(bool waitForUserInput = false)
     {
-        _gameOver = world.IsGameOver();
-        if (_gameOver )
+        if (world.IsGameOver(out _gameOver))
         {
             var gameOverMsg = view.GetGameOverText();
-            DrawWorldWithLock(world.UpdateMap(), gameOverMsg);
+            DrawWorldWithLock(world.GetWorldSnapShot(), gameOverMsg);
         }
 
         // TODO When goal use next world if exist do not end game.
-        _goal = world.IsGoal();
-        if (_goal)
+        if (world.IsGoal(out _goal))
         {
             var isGoalMsg = view.GetIsGoalText();
-            DrawWorldWithLock(world.UpdateMap(), isGoalMsg);
+            DrawWorldWithLock(world.GetWorldSnapShot(), isGoalMsg);
         }
+
         _existingEnemy = world.FightingEnemy;
         if (_existingEnemy != null)
         {

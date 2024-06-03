@@ -1,13 +1,8 @@
-﻿using Game.model.Weapon;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Game.Model.Weapon;
 
-namespace Game.model.GameEntity
+namespace Game.Model.GameEntity
 {
-    internal interface IHero : IGameEntity, IMoveable, ILiving
+    internal interface IHero : IGameEntity, IMoveable, ICreature
     {
         IEnumerable<IWeapon> Weapons { get; }
     }

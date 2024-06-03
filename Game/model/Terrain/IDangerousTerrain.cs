@@ -1,11 +1,4 @@
-﻿using Game.model.terrain;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Game.model.Terrain;
+﻿namespace Game.Model.Terrain;
 
 internal interface IDangerousTerrain : ITerrain
 {

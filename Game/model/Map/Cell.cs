@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Game.model.Base;
-using Game.model.terrain;
+﻿using Game.Model.Terrain;
+using Game.Model.Base;
 
-namespace Game.model.Map;
+namespace Game.Model.Map;
 
 internal class Cell(
     Position position,

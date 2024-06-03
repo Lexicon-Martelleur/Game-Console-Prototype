@@ -1,22 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Game.model.Base;
-using Game.model.Map;
-using Game.model.Weapon;
+﻿using Game.Model.Map;
+using Game.Model.Weapon;
 
-namespace Game.model.GameEntity;
+namespace Game.Model.GameEntity;
 
-internal class Player(uint id, Position position) : IHero
+internal class Hero(uint id, Position position) : IHero
 {
     public uint Id => id;
 
     private uint _health = 100;
+
     public string Symbol => "🐝";
 
-    public string Name => "Player";
+    public string Name => "Hero";
 
     public uint Health {
         get => _health;

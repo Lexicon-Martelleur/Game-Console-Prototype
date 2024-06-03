@@ -1,31 +1,33 @@
 ﻿
-using Game.controller;
-using Game.model.GameEntity;
-using Game.model.Map;
-using Game.model.World;
+using Game.Controller;
+using Game.Model.GameEntity;
+using Game.Model.Map;
+using Game.Model.World;
 using Game.view;
 
 // World 1 BridgeGameWorld
 var view = new GameView();
 // TODO Implement ID generator
-var playerEntity = new Player(1, new Position(0, 0));
+var heroEntity = new Hero(1, new Position(0, 0));
 var flagBridgeGameWorld = new Flag(2, new Position(48, 28));
 var antOneBridgeGameWorld = new Ant(3, new Position(19, 23));
 var antTwoBridgeGameWorld = new Ant(4, new Position(29, 12));
 var antThreeBridgeGameWorld = new Ant(5, new Position(39, 2));
 var antFourBridgeGameWorld = new Ant(6, new Position(3, 3));
 IEnumerable<IGameEntity> entitiesBridgeGameWorld = [
-    playerEntity,
-    flagBridgeGameWorld,
     antOneBridgeGameWorld,
     antTwoBridgeGameWorld,
     antThreeBridgeGameWorld,
     antFourBridgeGameWorld
 ];
-var world = new BridgeGameWorld(
-    playerEntity,
+
+var bridgeWorldBuilder = new BridgeWorldBuilder();
+
+var world = new WorldService(
+    heroEntity,
     flagBridgeGameWorld, 
-    entitiesBridgeGameWorld
+    entitiesBridgeGameWorld,
+    bridgeWorldBuilder
 );
 
 // TODO World 2

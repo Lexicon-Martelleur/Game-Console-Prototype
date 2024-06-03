@@ -1,14 +1,14 @@
 ﻿
-using Game.model.GameEntity;
-using Game.model.Weapon;
-using Game.model.World;
+using Game.Model.GameEntity;
+using Game.Model.Weapon;
+using Game.Model.World;
 using Game.view;
 
-namespace Game.controller;
+namespace Game.Controller;
 
-internal class FightController(FightView view, IGameWorld world)
+internal class FightController(FightView view, IWorldService world)
 {
-    internal void StartFight(Player player, IEnemy enemy)
+    internal void StartFight(Hero player, IEnemy enemy)
     {
         bool fightIsOver = false;
         view.ClearScreen();
@@ -31,7 +31,7 @@ internal class FightController(FightView view, IGameWorld world)
         return weapon.ReduceHealth;
     }
 
-    private bool IsFightOver(Player player, IEnemy enemy) 
+    private bool IsFightOver(Hero player, IEnemy enemy) 
     {
         return player.Health == 0 || enemy.Health == 0;
     }
