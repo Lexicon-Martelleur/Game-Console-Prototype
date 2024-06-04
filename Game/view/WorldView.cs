@@ -1,9 +1,8 @@
 ﻿using System.Text;
 
-using Game.constants;
+using Game.Constant;
 using Game.Model.GameEntity;
 using Game.Model.Map;
-using Game.Constants;
 using Game.Model.World;
 
 namespace Game.view;

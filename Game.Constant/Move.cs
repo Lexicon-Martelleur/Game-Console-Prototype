@@ -1,6 +1,6 @@
-﻿namespace Game.constants;
+﻿namespace Game.Constant;
 
-internal enum Move
+public enum Move
 {
     UP,
     RIGHT,

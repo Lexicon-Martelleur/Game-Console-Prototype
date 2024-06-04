@@ -1,4 +1,4 @@
-﻿using Game.constants;
+﻿using Game.Constant;
 
 namespace Game.Model.Terrain;
 

@@ -3,7 +3,7 @@
 using Game.Model.GameEntity;
 using Game.Model.Map;
 using Game.Model.Weapon;
-using Game.constants;
+using Game.Constant;
 using Game.Model.Events;
 
 namespace Game.Model.World;
@@ -22,14 +22,7 @@ internal interface IWorld
 
     internal event EventHandler<WorldEventArgs<IEnemy>>? Fight;
 
-    internal Timers.Timer WorldTimer { get; set; }
-
-    //internal void InitWorld(
-    //    Timers.ElapsedEventHandler onWorldTimeChange,
-    //    EventHandler<WorldEventArgs<IGameEntity>> onGoal,
-    //    EventHandler<WorldEventArgs<IHero>> onGameOver,
-    //    EventHandler<WorldEventArgs<IEnemy>> onFight
-    //);
+    // internal Timers.Timer WorldTimer { get; set; }
 
     internal void InitWorld(WorldEvents worldEvents);
 

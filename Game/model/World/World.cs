@@ -6,7 +6,7 @@ using Game.Model.GameEntity;
 using Game.Model.Map;
 using Game.Model.Weapon;
 using Game.Model.Terrain;
-using Game.constants;
+using Game.Constant;
 using Game.Model.Events;
 
 namespace Game.Model.World;
@@ -36,10 +36,10 @@ internal class World(
 
     public event EventHandler<WorldEventArgs<IEnemy>>? Fight;
 
-    public Timers.Timer WorldTimer {
-        get => _worldTimer;
-        set => _worldTimer = value;
-    }
+    //public Timers.Timer WorldTimer {
+    //    get => _worldTimer;
+    //    set => _worldTimer = value;
+    //}
 
     public IHero Hero { get => hero; }
 
@@ -143,9 +143,9 @@ internal class World(
             FightingEnemy = GetFightingEnemy();
             worldEvents.OnWorldTime(source, e);
         };
-        WorldTimer.Elapsed += _worldEventWrapper.OnWorldTime;
-        WorldTimer.AutoReset = true;
-        WorldTimer.Enabled = true;
+        _worldTimer.Elapsed += _worldEventWrapper.OnWorldTime;
+        _worldTimer.AutoReset = true;
+        _worldTimer.Enabled = true;
 
 
         // TODO Add update builder here which
@@ -329,10 +329,10 @@ internal class World(
 
     public void CloseWorld()
     {
-        WorldTimer.Elapsed -= _worldEventWrapper.OnWorldTime;
+        _worldTimer.Elapsed -= _worldEventWrapper.OnWorldTime;
         Flag.Collected -= _worldEventWrapper.OnGoal;
         GameOver -= _worldEventWrapper.OnGameOver;
         Fight -= _worldEventWrapper.OnFight;
-        WorldTimer.Close();
+        _worldTimer.Close();
     }
 }

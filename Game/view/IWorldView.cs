@@ -1,4 +1,4 @@
-﻿using Game.constants;
+﻿using Game.Constant;
 using Game.Model.GameEntity;
 using Game.Model.Map;
 using Game.Model.World;
