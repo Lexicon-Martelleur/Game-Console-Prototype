@@ -49,6 +49,8 @@ internal interface IWorld
 
     internal string GetTerrainInfo();
 
+    public bool IsFightOver(IHero player, IEnemy enemy);
+
     internal bool IsHeroDead();
 
     internal void CloseWorld();

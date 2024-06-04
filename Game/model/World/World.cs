@@ -324,6 +324,11 @@ internal class World(
         Fight?.Invoke(this, e);
     }
 
+    public bool IsFightOver(IHero player, IEnemy enemy)
+    {
+        return player.Health == 0 || enemy.Health == 0;
+    }
+
     public bool IsHeroDead()
     {
         return Hero.Health == 0;

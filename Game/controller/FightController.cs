@@ -10,7 +10,7 @@ internal class FightController(FightView view, IWorld world)
 {
     internal void StartFight(IHero player, IEnemy enemy)
     {
-        bool fightIsOver = false;
+        // bool fightIsOver = false;
         view.ClearScreen();
         do
         {
@@ -21,9 +21,9 @@ internal class FightController(FightView view, IWorld world)
                 world.UpdateEntityHealth(enemy, weapon);
             }
             world.UpdateEntityHealth(player, enemy.Weapon);
-            fightIsOver = IsFightOver(player, enemy);
+            // fightIsOver = world.IsFightOver(player, enemy);
             
-        } while (!fightIsOver);
+        } while (!world.IsFightOver(player, enemy));
     }
 
     private uint HitOpponent(IWeapon weapon)
@@ -31,8 +31,8 @@ internal class FightController(FightView view, IWorld world)
         return weapon.ReduceHealth;
     }
 
-    private bool IsFightOver(IHero player, IEnemy enemy) 
-    {
-        return player.Health == 0 || enemy.Health == 0;
-    }
+    //private bool IsFightOver(IHero player, IEnemy enemy) 
+    //{
+    //    return player.Health == 0 || enemy.Health == 0;
+    //}
 }

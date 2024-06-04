@@ -104,6 +104,12 @@ internal class WorldController(
             world.InitWorld(OnWorldTimeChange, OnGoal, OnGameOver, OnFight);
             worldView.ClearScreen();
         }
+        else
+        {
+            _gameOver = true;
+            var gameOverMsg = worldView.GetGameOverText(world.Hero);
+            DrawWorldWithLock(world.GetWorldSnapShot(), gameOverMsg);
+        }
     }
 
     private void HandleMoveCommand(Move move)
