@@ -66,96 +66,6 @@ public class World(
         return _worldMap;
     }
 
-    public string GetTerrainInfo()
-    {
-        var fire = new Fire();
-        var water = new Water();
-        var cliff = new Cliff();
-        var stone = new Stone();
-        return $"({stone.Symbol} = -0," +
-            $" {water.Symbol} = -{water.ReduceHealth()}," +
-            $" {fire.Symbol} = -{fire.ReduceHealth()}," +
-            $" {cliff.Symbol} = -{cliff.ReduceHealth()})";
-    }
-
-    // TODO Implement equality check
-    public void RemoveEnemyFromWorld(IEnemy enemy)
-    {
-        var newWorldItems = new List<IDiscoverableArtifact>();
-        foreach (var item in WorldItems)
-        {
-            if (ArtifactIsNotEnenmy(item, enemy))
-            {
-                newWorldItems.Add(item);
-            }
-        };
-        WorldItems = newWorldItems;
-        FightingEnemy = null;
-    }
-
-    private bool ArtifactIsNotEnenmy(IDiscoverableArtifact item, IEnemy enemy)
-    {
-        var isNotEnenmy = false;
-        if (item is IGameEntity)
-        {
-            var entity = (IGameEntity)item;
-            if (entity.Id != enemy.Id)
-            {
-                isNotEnenmy = true;
-            }
-        }
-        else
-        {
-            isNotEnenmy = true;
-        }
-        return isNotEnenmy;
-    }
-
-    private void UpdatePlayerHealth(Position position)
-    {
-        if (worldBuilder.IsCliffTerrain(position) ||
-            worldBuilder.IsFireTerrain(position) ||
-            worldBuilder.IsWaterTerrain(position))
-        {
-            var terrain = GetDangerousTerrain(position);
-            if (hero.Health < (terrain?.ReduceHealth() ?? 0)) {
-                hero.Health = 0;
-            }
-            else
-            {
-                hero.Health = hero.Health - terrain?.ReduceHealth() ?? 0;
-            }
-        }
-    }
-
-    public IDangerousTerrain? GetDangerousTerrain(Position position)
-    {
-        Cell? findCell = null;
-        var worldMapSnapShot = _worldMap ?? GetWorldSnapShot();
-        foreach (Cell cell in worldMapSnapShot.Cells)
-        {
-            if (cell.Position == position)
-            {
-                findCell = cell;
-                break;
-            }
-        }
-        var terrain = findCell?.Terrain;
-        return terrain as IDangerousTerrain;
-    }
-
-    public void UpdateEntityHealth(ICreature entity, IWeapon weapon)
-    {
-        if (entity.Health < weapon.ReduceHealth)
-        {
-            entity.Health = 0;
-        }
-        else
-        {
-            entity.Health = entity.Health - weapon.ReduceHealth;
-        }
-    }
-
     public void InitWorld(WorldEvents worldEvents)
     {
         _worldEventWrapper.OnWorldTime = (source, e) =>
@@ -200,20 +110,12 @@ public class World(
     private void OnFlagPicked(Object? source, WorldEventArgs<IGameEntity> e)
     {
         Hero.Flags.Append(e.Data);
+        WorldItems = WorldItems.Where(item => e.Data.Position != item.Position);
     }
 
     private void OnPickedToken(Object? source, WorldEventArgs<IDiscoverableArtifact> e)
     {
-        var newWorldItems = new List<IDiscoverableArtifact>();
-        foreach (var item in WorldItems)
-        {
-            if (e.Data.Position != item.Position)
-            {
-                newWorldItems.Add(item);
-            }
-
-        }
-        WorldItems = newWorldItems;
+        WorldItems = WorldItems.Where(item => e.Data.Position != item.Position);
     }
 
     private void UpdateEnenmyPositions()
@@ -292,6 +194,40 @@ public class World(
         }
     }
 
+    private void UpdatePlayerHealth(Position position)
+    {
+        if (worldBuilder.IsCliffTerrain(position) ||
+            worldBuilder.IsFireTerrain(position) ||
+            worldBuilder.IsWaterTerrain(position))
+        {
+            var terrain = GetDangerousTerrain(position);
+            if (hero.Health < (terrain?.ReduceHealth() ?? 0))
+            {
+                hero.Health = 0;
+            }
+            else
+            {
+                hero.Health = hero.Health - terrain?.ReduceHealth() ?? 0;
+            }
+        }
+    }
+
+    private IDangerousTerrain? GetDangerousTerrain(Position position)
+    {
+        Cell? findCell = null;
+        var worldMapSnapShot = _worldMap ?? GetWorldSnapShot();
+        foreach (Cell cell in worldMapSnapShot.Cells)
+        {
+            if (cell.Position == position)
+            {
+                findCell = cell;
+                break;
+            }
+        }
+        var terrain = findCell?.Terrain;
+        return terrain as IDangerousTerrain;
+    }
+
     private void PickupExistingFlag()
     {
         if (flag.PickUpExistingItem(Hero, out IGameEntity entity))
@@ -300,7 +236,7 @@ public class World(
         }   
     }
 
-    public void PickupExistingHeart()
+    private void PickupExistingHeart()
     {
         foreach (var item in WorldItems)
         {
@@ -320,11 +256,6 @@ public class World(
                 PickTokenEvent?.Invoke(this, eventArgs);
             }
         }
-    }
-
-    public void GiveTokenToHero(ICollectable<IGameEntity> token)
-    {
-        Hero.Flags.Append(token);
     }
 
     private void IsGameOver()
@@ -364,6 +295,57 @@ public class World(
     {
         var e = new WorldEventArgs<IEnemy>(enemy);
         FightEvent?.Invoke(this, e);
+    }
+
+    public void RemoveEnemyFromWorld(IEnemy enemy)
+    {
+        WorldItems = WorldItems.Where(item =>
+            enemy.Position != item.Position &&
+            ArtifactIsNotEnenmy(item, enemy)
+        );
+        FightingEnemy = null;
+    }
+
+    private bool ArtifactIsNotEnenmy(IDiscoverableArtifact item, IEnemy enemy)
+    {
+        var isNotEnenmy = false;
+        if (item is IGameEntity)
+        {
+            var entity = (IGameEntity)item;
+            if (entity.Id != enemy.Id)
+            {
+                isNotEnenmy = true;
+            }
+        }
+        else
+        {
+            isNotEnenmy = true;
+        }
+        return isNotEnenmy;
+    }
+
+    public string GetTerrainInfo()
+    {
+        var fire = new Fire();
+        var water = new Water();
+        var cliff = new Cliff();
+        var stone = new Stone();
+        return $"({stone.Symbol} = -0," +
+            $" {water.Symbol} = -{water.ReduceHealth()}," +
+            $" {fire.Symbol} = -{fire.ReduceHealth()}," +
+            $" {cliff.Symbol} = -{cliff.ReduceHealth()})";
+    }
+
+    public void UpdateEntityHealth(ICreature entity, IWeapon weapon)
+    {
+        if (entity.Health < weapon.ReduceHealth)
+        {
+            entity.Health = 0;
+        }
+        else
+        {
+            entity.Health = entity.Health - weapon.ReduceHealth;
+        }
     }
 
     public bool IsFightOver(IHero player, IEnemy enemy)

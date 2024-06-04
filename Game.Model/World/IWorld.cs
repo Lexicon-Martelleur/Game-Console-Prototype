@@ -40,11 +40,11 @@ public interface IWorld
     /// </exception>
     public void MovePlayerToNextPosition(Move move);
 
-    public void UpdateEntityHealth(ICreature entity, IWeapon weapon);
-
     public void RemoveEnemyFromWorld(IEnemy enemy);
 
     public string GetTerrainInfo();
+
+    public void UpdateEntityHealth(ICreature entity, IWeapon weapon);
 
     public bool IsFightOver(IHero player, IEnemy enemy);
 
