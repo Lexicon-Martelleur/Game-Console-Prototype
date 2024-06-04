@@ -8,13 +8,13 @@ using Game.Model.World;
 
 namespace Game.view;
 
-internal class GameView : IGameView
+internal class WorldView : IWorldView
 {
     private int _cellWidth = 3;
 
     private string[,]? _previousDrawnMap;
 
-    internal GameView()
+    internal WorldView()
     {
         Console.Title = ConsoleGame.NAME;
     }
@@ -74,7 +74,7 @@ internal class GameView : IGameView
     {
         return $"""
         {GetHealthInfoText(world)}
-        {GetPlayerPositionText(world.Player)}
+        {GetPlayerPositionText(world.Hero)}
         {GetGoalMessageText(world.Flag)}
         {msg}
         """;
@@ -83,7 +83,7 @@ internal class GameView : IGameView
     private string GetHealthInfoText(IWorldService world)
     {
         return GetConsistentWidth(
-            $"❤️ {world.Player.Name} health: {world.Player.Health} {world.GetTerrainInfo()}",
+            $"❤️ {world.Hero.Name} health: {world.Hero.Health} {world.GetTerrainInfo()}",
             100
         );
     }
@@ -153,7 +153,7 @@ internal class GameView : IGameView
     public void WriteFightInfo(IWorldService world, IEnemy enemy, bool waitForUserInput)
     {
         ClearScreen();
-        var player = world.Player;
+        var player = world.Hero;
         var playerWeapons = new StringBuilder();
         foreach (var weapon in player.Weapons)
         {

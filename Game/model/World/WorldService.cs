@@ -1,15 +1,19 @@
-﻿using Timers = System.Timers;
+﻿// Ignore Spelling: Collectable
+
+using Timers = System.Timers;
 
 using Game.Model.GameEntity;
 using Game.Model.Map;
 using Game.Model.Weapon;
 using Game.Model.Terrain;
 using Game.constants;
+using Game.Events;
+using System;
 
 namespace Game.Model.World;
 
 internal class WorldService(
-    Hero player,
+    Hero hero,
     Flag flag,
     IEnumerable<IGameEntity> entities,
     IWorldBuilder worldBuilder) : IWorldService
@@ -20,7 +24,9 @@ internal class WorldService(
 
     private Timers.Timer _worldTimer = new Timers.Timer(1000);
 
-    private Timers.ElapsedEventHandler? onWorldTimeChangeWrapper;
+    private Timers.ElapsedEventHandler? _onWorldTimeChangeWrapper;
+
+    private EventHandler<WorldEventArgs<IGameEntity>>? _onGoalWrapper;
 
     private WorldMap? _worldMap;
 
@@ -29,7 +35,7 @@ internal class WorldService(
         set => _worldTimer = value;
     }
 
-    public Hero Player { get => player; }
+    public Hero Hero { get => hero; }
 
     public Flag Flag { get => flag; }
 
@@ -39,14 +45,14 @@ internal class WorldService(
     }
 
     public IEnumerable<IGameEntity> GameEntities {
-        get => entities.Append(player).Append(flag);
+        get => entities.Append(hero).Append(flag);
         private set => entities = value;
     }
 
     public WorldMap GetWorldSnapShot()
     {
         _worldMap = worldBuilder.CreateWorldSnapShot(
-            entities.Append(Player).Append(flag)
+            entities.Append(Hero).Append(flag)
         );
         return _worldMap;
     }
@@ -85,12 +91,12 @@ internal class WorldService(
             worldBuilder.IsWaterTerrain(position))
         {
             var terrain = GetDangerousTerrain(position);
-            if (player.Health < (terrain?.ReduceHealth() ?? 0)) {
-                player.Health = 0;
+            if (hero.Health < (terrain?.ReduceHealth() ?? 0)) {
+                hero.Health = 0;
             }
             else
             {
-                player.Health = player.Health - terrain?.ReduceHealth() ?? 0;
+                hero.Health = hero.Health - terrain?.ReduceHealth() ?? 0;
             }
         }
     }
@@ -123,17 +129,45 @@ internal class WorldService(
         }
     }
 
-    public void InitWorld(Timers.ElapsedEventHandler onWorldTimeChange)
+    public void InitWorld(
+        Timers.ElapsedEventHandler onWorldTimeChange,
+        EventHandler<WorldEventArgs<IGameEntity>> onGoal
+    )
     {
-        onWorldTimeChangeWrapper = (sender, e) =>
+        _onWorldTimeChangeWrapper = (source, e) =>
         {
             UpdateEnenmyPositions();
             FightingEnemy = GetFightingEnemy();
-            onWorldTimeChange(sender, e);
+            onWorldTimeChange(source, e);
         };
-        WorldTimer.Elapsed += onWorldTimeChangeWrapper;
+        WorldTimer.Elapsed += _onWorldTimeChangeWrapper;
         WorldTimer.AutoReset = true;
         WorldTimer.Enabled = true;
+
+        //Flag.Collected += OnFlagPicked;
+
+        _onGoalWrapper = (source, e) =>
+        {
+            OnFlagPicked(source, e);
+            onGoal(source, e);
+            CloseWorld();
+        };
+        Flag.Collected += _onGoalWrapper;
+    }
+
+    private void OnFlagPicked(Object? source, WorldEventArgs<IGameEntity> e)
+    {
+        Hero.Flags.Append(e.Data);
+        //var newEntitites = new List<IGameEntity>();
+        //foreach (var entity in GameEntities)
+        //{
+        //    if (entity.Id != e.Data.Id)
+        //    {
+        //        newEntitites.Add(entity);
+        //    }
+        //};
+        //GameEntities = newEntitites;
+        // CloseWorld();
     }
 
     private void UpdateEnenmyPositions()
@@ -167,14 +201,14 @@ internal class WorldService(
 
     private bool IsFightPosition(IGameEntity entity)
     {
-        return entity.Position == Player.Position;
+        return entity.Position == Hero.Position;
     }
 
     public void MovePlayerToNextPosition(Move move)
     {
 
-        int nextY = Player.Position.y;
-        int nextX = Player.Position.x;
+        int nextY = Hero.Position.y;
+        int nextX = Hero.Position.x;
         switch (move)
         {
             case Move.UP: nextY--; break;
@@ -191,11 +225,12 @@ internal class WorldService(
             );
         }
         UpdatePlayerPosition(nextPos);
+        PickupExistingFlag();
     }
 
     private void UpdatePlayerPosition(Position position)
     {
-        Player.UpdatePosition(position);
+        Hero.UpdatePosition(position);
         UpdatePlayerHealth(position);
         FightingEnemy = GetFightingEnemy();
     }
@@ -213,9 +248,35 @@ internal class WorldService(
         }
     }
 
+    private void PickupExistingFlag()
+    {
+        if (flag.PickUpExistingEntity(Hero, out IGameEntity entity))
+        {
+            Hero.Flags.Append(entity);
+        }   
+    }
+
+    //public void PickupExistingToken()
+    //{
+    //    foreach (var entity in GameEntities)
+    //    {
+    //        if (entity is ICollectable<IGameEntity> &&
+    //            entity.Position == Hero.Position)
+    //        {
+    //            return entity as ICollectable<IGameEntity>;
+    //        }
+    //    }
+    //    return null;
+    //}
+
+    public void GiveTokenToHero(ICollectable<IGameEntity> token)
+    {
+        Hero.Flags.Append(token);
+    }
+
     public bool IsGameOver(out bool isGameOver)
     {
-        isGameOver = Player.Health == 0;
+        isGameOver = Hero.Health == 0;
         if (isGameOver)
         {
             CloseWorld();
@@ -225,7 +286,7 @@ internal class WorldService(
 
     public bool IsGoal(out bool isGoal)
     {
-        isGoal = Player.Position == flag.Position;
+        isGoal = Hero.Position == flag.Position;
         if (isGoal) {
             CloseWorld();
         }
@@ -234,7 +295,8 @@ internal class WorldService(
 
     public void CloseWorld()
     {
-        WorldTimer.Elapsed -= onWorldTimeChangeWrapper;
+        WorldTimer.Elapsed -= _onWorldTimeChangeWrapper;
+        Flag.Collected -= _onGoalWrapper;
         WorldTimer.Close();  
     }
 }

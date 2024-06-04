@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Game.Constants;
+namespace Game.Model.World;
 
-internal class ConsoleGame
+internal class WorldConstant
 {
-    internal const string NAME = "🎮 My Console Game 🎮";
+    internal const int HEIGHT = 30;
+    internal const int WIDTH = 50;
 }

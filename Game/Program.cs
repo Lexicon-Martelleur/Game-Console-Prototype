@@ -1,12 +1,11 @@
-﻿
-using Game.Controller;
+﻿using Game.Controller;
 using Game.Model.GameEntity;
 using Game.Model.Map;
 using Game.Model.World;
 using Game.view;
 
 // World 1 BridgeGameWorld
-var view = new GameView();
+var worldView = new WorldView();
 // TODO Implement ID generator
 var heroEntity = new Hero(1, new Position(0, 0));
 var flagBridgeGameWorld = new Flag(2, new Position(48, 28));
@@ -21,9 +20,11 @@ IEnumerable<IGameEntity> entitiesBridgeGameWorld = [
     antFourBridgeGameWorld
 ];
 
-var bridgeWorldBuilder = new BridgeWorldBuilder();
+var bridgeWorldBuilder = new BridgeWorldBuilder(
+    WorldConstant.WIDTH,
+    WorldConstant.HEIGHT);
 
-var world = new WorldService(
+var worldService = new WorldService(
     heroEntity,
     flagBridgeGameWorld, 
     entitiesBridgeGameWorld,
@@ -35,12 +36,12 @@ var world = new WorldService(
 // TODO world 3
 
 // Fight
-var fightView = new FightView(30, 50);
-var fightController = new FightController(fightView, world);
+var fightView = new FightView(
+    WorldConstant.WIDTH,
+    WorldConstant.HEIGHT);
+var fightController = new FightController(fightView, worldService);
 
 // TODO Controller should have a list of worlds
-var gameController = new GameController(view, world, fightController);
+var gameController = new WorldController(worldView, worldService, fightController);
 
 gameController.Start();
-
-

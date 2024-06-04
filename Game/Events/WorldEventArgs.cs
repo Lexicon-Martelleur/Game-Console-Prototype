@@ -2,13 +2,10 @@
 
 internal class WorldEventArgs<EventData>
 {
-    public DateTime SignalTime { get; }
-    
     public EventData Data { get; }
 
-    public WorldEventArgs(DateTime signalTime, EventData data)
+    public WorldEventArgs(EventData data)
     {
-        SignalTime = signalTime;
         Data = data;
     }
 }

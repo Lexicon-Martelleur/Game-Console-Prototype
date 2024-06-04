@@ -4,12 +4,13 @@ using Game.Model.GameEntity;
 using Game.Model.Map;
 using Game.Model.Weapon;
 using Game.constants;
+using Game.Events;
 
 namespace Game.Model.World;
 
 internal interface IWorldService
 {
-    internal Hero Player { get; }
+    internal Hero Hero { get; }
 
     internal Flag Flag { get; }
 
@@ -19,7 +20,10 @@ internal interface IWorldService
 
     internal Timers.Timer WorldTimer { get; set; }
 
-    internal void InitWorld(Timers.ElapsedEventHandler onWorldTimeChange);
+    internal void InitWorld(
+        Timers.ElapsedEventHandler onWorldTimeChange,
+        EventHandler<WorldEventArgs<IGameEntity>> onGoal
+    );
 
     internal WorldMap GetWorldSnapShot();
 

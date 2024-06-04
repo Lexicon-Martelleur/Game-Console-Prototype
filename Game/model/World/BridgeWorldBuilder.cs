@@ -4,23 +4,19 @@ using Game.Model.Terrain;
 
 namespace Game.Model.World;
 
-internal class BridgeWorldBuilder : IWorldBuilder
-{
-    private readonly int _height = 30;
-
-    private readonly int _width = 50;
-    
+internal class BridgeWorldBuilder(int width, int height) : IWorldBuilder
+{   
     public WorldMap CreateWorldSnapShot(IEnumerable<IGameEntity> gameEntities)
     {
-        return new WorldMap(_height, _width, UpdateWorld(gameEntities));
+        return new WorldMap(height, width, UpdateWorld(gameEntities));
     }
 
     private Cell[,] UpdateWorld(IEnumerable<IGameEntity> entities)
     {
-        var cells = new Cell[_height, _width];
-        for (int y = 0; y < _height; y++)
+        var cells = new Cell[height, width];
+        for (int y = 0; y < height; y++)
         {
-            for (int x = 0; x < _width; x++)
+            for (int x = 0; x < width; x++)
             {
                 Position position = new Position(x, y);
                 IGameEntity? gameEntity = GetEntityAtPosition(entities, position);
@@ -92,8 +88,8 @@ internal class BridgeWorldBuilder : IWorldBuilder
     public bool IsOutsideMap(Position position)
     {
         return (position.x < 0 ||
-            position.x >= _width ||
+            position.x >= width ||
             position.y < 0 ||
-            position.y >= _height);
+            position.y >= height);
     }
 }

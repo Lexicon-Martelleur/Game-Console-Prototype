@@ -5,14 +5,14 @@ using System.Text;
 
 namespace Game.view;
 
-internal class FightView(int height, int width)
+internal class FightView(int width, int height)
 {
     private string[,]? _previousDrawnFight;
 
     private int _cellWidth = 3;
 
     internal void DrawFight(
-        Hero player,
+        IHero player,
         IEnemy enemy)
     {
 
@@ -56,7 +56,7 @@ internal class FightView(int height, int width)
         ));
     }
 
-    private string GetSymbol(int x, int y, Hero player, IEnemy enemy)
+    private string GetSymbol(int x, int y, IHero player, IEnemy enemy)
     {
         var playerYPosition = height / 2;
         var playerXPositionfirst = (width / 4) * 1;
@@ -93,7 +93,7 @@ internal class FightView(int height, int width)
         return consistentCellWidth;
     }
 
-    internal string ReadWeapon(Hero player)
+    internal string ReadWeapon(IHero player)
     {
         var weapons = new StringBuilder();
         foreach (var weapon in player.Weapons)

@@ -5,7 +5,7 @@ using Game.Model.World;
 
 namespace Game.view;
 
-internal interface IGameView
+internal interface IWorldView
 {
     internal void DrawWorld(IWorldService world, WorldMap map, string msg);
 
