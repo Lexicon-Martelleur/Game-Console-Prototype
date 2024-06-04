@@ -8,11 +8,11 @@ using Game.Events;
 
 namespace Game.Model.World;
 
-internal interface IWorldService
+internal interface IWorld
 {
-    internal Hero Hero { get; }
+    internal IHero Hero { get; }
 
-    internal Flag Flag { get; }
+    internal IFlag Flag { get; }
 
     internal IEnemy? FightingEnemy { get; }
 
@@ -20,12 +20,15 @@ internal interface IWorldService
 
     internal event EventHandler<WorldEventArgs<IHero>>? GameOver;
 
+    internal event EventHandler<WorldEventArgs<IEnemy>>? Fight;
+
     internal Timers.Timer WorldTimer { get; set; }
 
     internal void InitWorld(
         Timers.ElapsedEventHandler onWorldTimeChange,
         EventHandler<WorldEventArgs<IGameEntity>> onGoal,
-        EventHandler<WorldEventArgs<IHero>> onGameOver
+        EventHandler<WorldEventArgs<IHero>> onGameOver,
+        EventHandler<WorldEventArgs<IEnemy>> onFight
     );
 
     internal WorldMap GetWorldSnapShot();
@@ -44,9 +47,9 @@ internal interface IWorldService
 
     internal void RemoveFightingEnemyFromWorld(IEnemy enemy);
 
-    // internal bool IsGameOver(out bool isGameOver);
-
     internal string GetTerrainInfo();
+
+    internal bool IsHeroDead();
 
     internal void CloseWorld();
 }

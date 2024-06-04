@@ -3,7 +3,7 @@ using Game.Events;
 
 namespace Game.Model.GameEntity;
 
-internal class Flag(uint id, Position position) : ICollectable<IGameEntity>
+internal class Flag(uint id, Position position, uint gamePoints) : IFlag
 {
     public event EventHandler<WorldEventArgs<IGameEntity>>? Collected;
 
@@ -14,6 +14,8 @@ internal class Flag(uint id, Position position) : ICollectable<IGameEntity>
     public string Name => "GoalFlag";
 
     public Position Position => position;
+
+    public uint GamePoints => gamePoints;
 
     public bool PickUpExistingEntity(IHero hero, out IGameEntity entity)
     {

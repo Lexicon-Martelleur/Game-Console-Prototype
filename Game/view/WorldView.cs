@@ -19,7 +19,7 @@ internal class WorldView : IWorldView
         Console.Title = ConsoleGame.NAME;
     }
 
-    public void DrawWorld(IWorldService world, WorldMap map, string msg)
+    public void DrawWorld(IWorld world, WorldMap map, string msg)
     {
         if (_previousDrawnMap == null)
         {
@@ -70,7 +70,7 @@ internal class WorldView : IWorldView
         return consistentCellWidth;
     }
 
-    private string GetGameInfoText(IWorldService world, string msg)
+    private string GetGameInfoText(IWorld world, string msg)
     {
         return $"""
         {GetHealthInfoText(world)}
@@ -80,7 +80,7 @@ internal class WorldView : IWorldView
         """;
     }
 
-    private string GetHealthInfoText(IWorldService world)
+    private string GetHealthInfoText(IWorld world)
     {
         return GetConsistentWidth(
             $"❤️ {world.Hero.Name} health: {world.Hero.Health} {world.GetTerrainInfo()}",
@@ -97,7 +97,7 @@ internal class WorldView : IWorldView
         );
     }
 
-    public string GetGoalMessageText(Flag flag)
+    private string GetGoalMessageText(IFlag flag)
     {
         return GetConsistentWidth(
             $"ℹ️ World Task: Take the flag {flag.Symbol} at [{flag.Position.x}, {flag.Position.y}] to win",
@@ -150,7 +150,7 @@ internal class WorldView : IWorldView
         );
     }
 
-    public void WriteFightInfo(IWorldService world, IEnemy enemy, bool waitForUserInput)
+    public void WriteFightInfo(IWorld world, IEnemy enemy, bool waitForUserInput)
     {
         ClearScreen();
         var player = world.Hero;

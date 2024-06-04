@@ -6,7 +6,7 @@ using Game.view;
 
 namespace Game.Controller;
 
-internal class FightController(FightView view, IWorldService world)
+internal class FightController(FightView view, IWorld world)
 {
     internal void StartFight(IHero player, IEnemy enemy)
     {

@@ -12,11 +12,11 @@ using System;
 
 namespace Game.Model.World;
 
-internal class WorldService(
-    Hero hero,
-    Flag flag,
+internal class World(
+    IHero hero,
+    IFlag flag,
     IEnumerable<IGameEntity> entities,
-    IWorldBuilder worldBuilder) : IWorldService
+    IWorldBuilder worldBuilder) : IWorld
 {
     private bool _oddTimeFrame = false;
 
@@ -30,18 +30,22 @@ internal class WorldService(
 
     private EventHandler<WorldEventArgs<IHero>>? _onGameOverWrapper;
 
+    private EventHandler<WorldEventArgs<IEnemy>>? _onFightWrapper;
+
     private WorldMap? _worldMap;
 
     public event EventHandler<WorldEventArgs<IHero>>? GameOver;
+
+    public event EventHandler<WorldEventArgs<IEnemy>>? Fight;
 
     public Timers.Timer WorldTimer {
         get => _worldTimer;
         set => _worldTimer = value;
     }
 
-    public Hero Hero { get => hero; }
+    public IHero Hero { get => hero; }
 
-    public Flag Flag { get => flag; }
+    public IFlag Flag { get => flag; }
 
     public IEnemy? FightingEnemy { 
         get => _fightingEnemy;
@@ -136,7 +140,8 @@ internal class WorldService(
     public void InitWorld(
         Timers.ElapsedEventHandler onWorldTimeChange,
         EventHandler<WorldEventArgs<IGameEntity>> onGoal,
-        EventHandler<WorldEventArgs<IHero>> onGameOver
+        EventHandler<WorldEventArgs<IHero>> onGameOver,
+        EventHandler<WorldEventArgs<IEnemy>> onFight
     )
     {
         _onWorldTimeChangeWrapper = (source, e) =>
@@ -166,6 +171,12 @@ internal class WorldService(
             CloseWorld();
         };
         GameOver += _onGameOverWrapper;
+
+        _onFightWrapper = (source, e) =>
+        {
+            onFight(source, e);
+        };
+        Fight += _onFightWrapper;
     }
 
     private void OnFlagPicked(Object? source, WorldEventArgs<IGameEntity> e)
@@ -202,14 +213,19 @@ internal class WorldService(
         return enemy;
     }
 
-    private bool IsFightPosition(IGameEntity entity)
-    {
-        return entity.Position == Hero.Position;
-    }
-
     public void MovePlayerToNextPosition(Move move)
     {
+        var nextPos = NextPlayerPosition(move);
+        Hero.UpdatePosition(nextPos);
+        UpdatePlayerHealth(nextPos);
+        FightingEnemy = GetFightingEnemy(); // TODO Event?
+        IsGameOver();
+        IsFight();
+        PickupExistingFlag();
+    }
 
+    private Position NextPlayerPosition(Move move)
+    {
         int nextY = Hero.Position.y;
         int nextX = Hero.Position.x;
         switch (move)
@@ -227,16 +243,7 @@ internal class WorldService(
                 $"Player can not move to position [{nextPos.x}, {nextPos.y}]"
             );
         }
-        UpdatePlayerPosition(nextPos);
-        IsGameOver();
-        PickupExistingFlag();
-    }
-
-    private void UpdatePlayerPosition(Position position)
-    {
-        Hero.UpdatePosition(position);
-        UpdatePlayerHealth(position);
-        FightingEnemy = GetFightingEnemy();
+        return nextPos;
     }
 
     private bool IsValidPosition(Position position)
@@ -294,11 +301,40 @@ internal class WorldService(
         CloseWorld();
     }
 
+    private void IsFight()
+    {
+        foreach (IGameEntity entity in GameEntities)
+        {
+            if (entity is IEnemy && IsFightPosition(entity))
+            {
+                OnFight((IEnemy)entity);
+                break;
+            }
+        };
+    }
+
+    private bool IsFightPosition(IGameEntity entity)
+    {
+        return entity.Position == Hero.Position;
+    }
+
+    private void OnFight(IEnemy enemy)
+    {
+        var e = new WorldEventArgs<IEnemy>(enemy);
+        Fight?.Invoke(this, e);
+    }
+
+    public bool IsHeroDead()
+    {
+        return Hero.Health == 0;
+    }
+
     public void CloseWorld()
     {
         WorldTimer.Elapsed -= _onWorldTimeChangeWrapper;
         Flag.Collected -= _onGoalWrapper;
         GameOver -= _onGameOverWrapper;
+        Fight -= _onFightWrapper;
         WorldTimer.Close();
     }
 }

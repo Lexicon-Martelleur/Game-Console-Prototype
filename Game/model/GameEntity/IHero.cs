@@ -6,7 +6,7 @@ namespace Game.Model.GameEntity
     {
         IEnumerable<IWeapon> Weapons { get; }
 
-        IEnumerable<ICollectable<IGameEntity>> Flags { get; set; }
+        IEnumerable<IFlag> Flags { get; set; }
 
         IEnumerable<ICollectable<IGameEntity>> Tokens { get; set; }
     }

@@ -9,7 +9,7 @@ internal class Hero(uint id, Position position) : IHero
 
     private uint _health = 100;
 
-    private IEnumerable<ICollectable<IGameEntity>> _flags = [];
+    private IEnumerable<IFlag> _flags = [];
 
     private IEnumerable<ICollectable<IGameEntity>> _tokens = [];
 
@@ -29,7 +29,7 @@ internal class Hero(uint id, Position position) : IHero
         new Arrow()
     ];
 
-    public IEnumerable<ICollectable<IGameEntity>> Flags {
+    public IEnumerable<IFlag> Flags {
         get => _flags;
         set => _flags = value;
     }

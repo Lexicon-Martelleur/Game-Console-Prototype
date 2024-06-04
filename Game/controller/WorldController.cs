@@ -11,14 +11,12 @@ namespace Game.Controller;
 
 internal class WorldController(
     IWorldView worldView,
-    IWorldService worldService,
+    IWorld world,
     FightController fightController)
 {
     private bool _gameOver = false;
 
     private bool _goal = false;
-
-    private IEnemy? _closeEnemy = null;
 
     private string _additionalMessage = "";
 
@@ -33,14 +31,14 @@ internal class WorldController(
     {
         SynchronizationContext.SetSynchronizationContext(_syncronizationContext);
         worldView.ClearScreen();
-        worldService.InitWorld(OnWorldTimeChange, OnGoal, OnGameOver);
+        world.InitWorld(OnWorldTimeChange, OnGoal, OnGameOver, OnFight);
         do
         {
-            if (_closeEnemy != null)
+            if (world.FightingEnemy != null)
             {
-                FightExistingEnemy(_closeEnemy);
+                FightExistingEnemy(world.FightingEnemy);
             }
-            DrawWorldWithLock(worldService.GetWorldSnapShot(), _additionalMessage);
+            DrawWorldWithLock(world.GetWorldSnapShot(), _additionalMessage);
             HandleMoveCommand(worldView.GetCommand());
         } while (!_gameOver && !_goal);
     }
@@ -49,22 +47,28 @@ internal class WorldController(
     {
         _goal = true;
         var isGoalMsg = worldView.GetIsGoalText(e.Data);
-        DrawWorldWithLock(worldService.GetWorldSnapShot(), isGoalMsg);
+        DrawWorldWithLock(world.GetWorldSnapShot(), isGoalMsg);
     }
 
     private void OnGameOver(Object? source, WorldEventArgs<IHero> e)
     {
         _gameOver = true;
         var gameOverMsg = worldView.GetGameOverText(e.Data);
-        DrawWorldWithLock(worldService.GetWorldSnapShot(), gameOverMsg);
+        DrawWorldWithLock(world.GetWorldSnapShot(), gameOverMsg);
+    }
+
+    private void OnFight(Object? source, WorldEventArgs<IEnemy> e)
+    {
+        bool waitForUserInput = true;
+        SetupFightInfoState(e.Data, waitForUserInput);
     }
 
     private void OnWorldTimeChange(Object? source, Timers.ElapsedEventArgs e)
     {
-        var worldEnemy = worldService.FightingEnemy;
+        var worldEnemy = world.FightingEnemy;
         if (worldEnemy == null)
         {
-            DrawWorldWithLock(worldService.GetWorldSnapShot(), _additionalMessage);
+            DrawWorldWithLock(world.GetWorldSnapShot(), _additionalMessage);
         } else
         {
             var worldEnemyEventArgs = new WorldTimeEventArgs<IEnemy>(e.SignalTime, worldEnemy);
@@ -78,24 +82,26 @@ internal class WorldController(
     {
         lock (_drawMapLock)
         {
-            worldView.DrawWorld(worldService, map, msg);
+            worldView.DrawWorld(world, map, msg);
         }
     }
 
     private void HandleEnemyFightEvent(WorldTimeEventArgs<IEnemy> e)
     {
-        _closeEnemy = e.Data;
-        HandleGameState();
+        if (world.FightingEnemy != null)
+        {
+            bool waitForUserInput = false;
+            SetupFightInfoState(world.FightingEnemy, waitForUserInput);
+        }
     }
 
     private void FightExistingEnemy(IEnemy enemy)
     {
-        fightController.StartFight(worldService.Hero, enemy);
-        if (worldService.Hero.Health != 0)
+        fightController.StartFight(world.Hero, enemy);
+        if (!world.IsHeroDead())
         {
-            worldService.RemoveFightingEnemyFromWorld(enemy);
-            _closeEnemy = null;
-            worldService.InitWorld(OnWorldTimeChange, OnGoal, OnGameOver);
+            world.RemoveFightingEnemyFromWorld(enemy);
+            world.InitWorld(OnWorldTimeChange, OnGoal, OnGameOver, OnFight);
             worldView.ClearScreen();
         }
     }
@@ -104,29 +110,17 @@ internal class WorldController(
     {
         try
         {
-            worldService.MovePlayerToNextPosition(move);
-            bool waitForUserInput = true;
-            HandleGameState(waitForUserInput);
+            world.MovePlayerToNextPosition(move);
         }
         catch (InvalidOperationException e) 
         {
-            _additionalMessage = worldView.GetWarningMessageText(worldService.Hero, e.Message);
-        }
-    }
-
-    // TODO! Use events to communicate back.
-    private void HandleGameState(bool waitForUserInput = false)
-    {
-        _closeEnemy = worldService.FightingEnemy;
-        if (_closeEnemy != null)
-        {
-            SetupFightInfoState(_closeEnemy, waitForUserInput);
+            _additionalMessage = worldView.GetWarningMessageText(world.Hero, e.Message);
         }
     }
 
     private void SetupFightInfoState(IEnemy enemy, bool waitForUserInput)
     {
-        worldService.CloseWorld();
-        worldView.WriteFightInfo(worldService, enemy, waitForUserInput);
+        world.CloseWorld();
+        worldView.WriteFightInfo(world, enemy, waitForUserInput);
     }
 }
