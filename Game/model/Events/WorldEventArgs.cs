@@ -1,4 +1,4 @@
-﻿namespace Game.Events;
+﻿namespace Game.Model.Events;
 
 internal class WorldEventArgs<EventData>
 {

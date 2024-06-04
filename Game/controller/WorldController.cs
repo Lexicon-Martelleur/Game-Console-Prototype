@@ -5,7 +5,7 @@ using Game.Model.GameEntity;
 using Game.Model.Map;
 using Game.Model.World;
 using Game.view;
-using Game.Events;
+using Game.Model.Events;
 
 namespace Game.Controller;
 
@@ -31,7 +31,7 @@ internal class WorldController(
     {
         SynchronizationContext.SetSynchronizationContext(_syncronizationContext);
         worldView.ClearScreen();
-        world.InitWorld(OnWorldTimeChange, OnGoal, OnGameOver, OnFight);
+        world.InitWorld(GetWorldEvents());
         do
         {
             if (world.FightingEnemy != null)
@@ -41,6 +41,13 @@ internal class WorldController(
             DrawWorldWithLock(world.GetWorldSnapShot(), _additionalMessage);
             HandleMoveCommand(worldView.GetCommand());
         } while (!_gameOver && !_goal);
+    }
+
+    private WorldEvents GetWorldEvents()
+    {
+        return (
+            OnWorldTime, OnGoal, OnGameOver, OnFight
+        );
     }
 
     private void OnGoal(Object? source, WorldEventArgs<IGameEntity> e)
@@ -63,7 +70,7 @@ internal class WorldController(
         SetupFightInfoState(e.Data, waitForUserInput);
     }
 
-    private void OnWorldTimeChange(Object? source, Timers.ElapsedEventArgs e)
+    private void OnWorldTime(Object? source, Timers.ElapsedEventArgs e)
     {
         var worldEnemy = world.FightingEnemy;
         if (worldEnemy == null)
@@ -101,7 +108,7 @@ internal class WorldController(
         if (!world.IsHeroDead())
         {
             world.RemoveFightingEnemyFromWorld(enemy);
-            world.InitWorld(OnWorldTimeChange, OnGoal, OnGameOver, OnFight);
+            world.InitWorld(GetWorldEvents());
             worldView.ClearScreen();
         }
         else

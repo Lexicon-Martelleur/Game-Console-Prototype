@@ -1,5 +1,5 @@
 ﻿using Game.Model.Map;
-using Game.Events;
+using Game.Model.Events;
 
 namespace Game.Model.GameEntity;
 

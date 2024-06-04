@@ -7,8 +7,7 @@ using Game.Model.Map;
 using Game.Model.Weapon;
 using Game.Model.Terrain;
 using Game.constants;
-using Game.Events;
-using System;
+using Game.Model.Events;
 
 namespace Game.Model.World;
 
@@ -24,13 +23,12 @@ internal class World(
 
     private Timers.Timer _worldTimer = new Timers.Timer(1000);
 
-    private Timers.ElapsedEventHandler? _onWorldTimeChangeWrapper;
-
-    private EventHandler<WorldEventArgs<IGameEntity>>? _onGoalWrapper;
-
-    private EventHandler<WorldEventArgs<IHero>>? _onGameOverWrapper;
-
-    private EventHandler<WorldEventArgs<IEnemy>>? _onFightWrapper;
+    private WorldEvents _worldEventWrapper = (
+        OnWorldTime: (source, e) => { },
+        OnGoal: (source, e) => { },
+        OnGameOver: (source, e) => { },
+        OnFight: (source, e) => { } 
+    );
 
     private WorldMap? _worldMap;
 
@@ -137,46 +135,41 @@ internal class World(
         }
     }
 
-    public void InitWorld(
-        Timers.ElapsedEventHandler onWorldTimeChange,
-        EventHandler<WorldEventArgs<IGameEntity>> onGoal,
-        EventHandler<WorldEventArgs<IHero>> onGameOver,
-        EventHandler<WorldEventArgs<IEnemy>> onFight
-    )
+    public void InitWorld(WorldEvents worldEvents)
     {
-        _onWorldTimeChangeWrapper = (source, e) =>
+        _worldEventWrapper.OnWorldTime = (source, e) =>
         {
             UpdateEnenmyPositions();
             FightingEnemy = GetFightingEnemy();
-            onWorldTimeChange(source, e);
+            worldEvents.OnWorldTime(source, e);
         };
-        WorldTimer.Elapsed += _onWorldTimeChangeWrapper;
+        WorldTimer.Elapsed += _worldEventWrapper.OnWorldTime;
         WorldTimer.AutoReset = true;
         WorldTimer.Enabled = true;
 
-        
+
         // TODO Add update builder here which
         // will lead to a new world
-        _onGoalWrapper = (source, e) =>
+        _worldEventWrapper.OnGoal = (source, e) =>
         {
             OnFlagPicked(source, e);
-            onGoal(source, e);
+            worldEvents.OnGoal(source, e);
             CloseWorld();
         };
-        Flag.Collected += _onGoalWrapper;
+        Flag.Collected += _worldEventWrapper.OnGoal;
 
-        _onGameOverWrapper = (source, e) =>
+        _worldEventWrapper.OnGameOver = (source, e) =>
         {
-            onGameOver(source, e);
+            worldEvents.OnGameOver(source, e);
             CloseWorld();
         };
-        GameOver += _onGameOverWrapper;
+        GameOver += _worldEventWrapper.OnGameOver;
 
-        _onFightWrapper = (source, e) =>
+        _worldEventWrapper.OnFight = (source, e) =>
         {
-            onFight(source, e);
+            worldEvents.OnFight(source, e);
         };
-        Fight += _onFightWrapper;
+        Fight += _worldEventWrapper.OnFight;
     }
 
     private void OnFlagPicked(Object? source, WorldEventArgs<IGameEntity> e)
@@ -336,10 +329,10 @@ internal class World(
 
     public void CloseWorld()
     {
-        WorldTimer.Elapsed -= _onWorldTimeChangeWrapper;
-        Flag.Collected -= _onGoalWrapper;
-        GameOver -= _onGameOverWrapper;
-        Fight -= _onFightWrapper;
+        WorldTimer.Elapsed -= _worldEventWrapper.OnWorldTime;
+        Flag.Collected -= _worldEventWrapper.OnGoal;
+        GameOver -= _worldEventWrapper.OnGameOver;
+        Fight -= _worldEventWrapper.OnFight;
         WorldTimer.Close();
     }
 }
