@@ -6,11 +6,10 @@ using Game.view;
 
 namespace Game.Controller;
 
-internal class FightController(FightView view, IWorld world)
+internal class FightController(IFightView view, IWorld world)
 {
     internal void StartFight(IHero player, IEnemy enemy)
     {
-        // bool fightIsOver = false;
         view.ClearScreen();
         do
         {
@@ -21,7 +20,6 @@ internal class FightController(FightView view, IWorld world)
                 world.UpdateEntityHealth(enemy, weapon);
             }
             world.UpdateEntityHealth(player, enemy.Weapon);
-            // fightIsOver = world.IsFightOver(player, enemy);
             
         } while (!world.IsFightOver(player, enemy));
     }
@@ -30,9 +28,4 @@ internal class FightController(FightView view, IWorld world)
     {
         return weapon.ReduceHealth;
     }
-
-    //private bool IsFightOver(IHero player, IEnemy enemy) 
-    //{
-    //    return player.Health == 0 || enemy.Health == 0;
-    //}
 }

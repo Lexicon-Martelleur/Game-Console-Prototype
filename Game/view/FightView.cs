@@ -5,13 +5,13 @@ using System.Text;
 
 namespace Game.view;
 
-internal class FightView(int width, int height)
+internal class FightView(int width, int height) : IFightView
 {
     private string[,]? _previousDrawnFight;
 
     private int _cellWidth = 3;
 
-    internal void DrawFight(
+    public void DrawFight(
         IHero player,
         IEnemy enemy)
     {
@@ -70,7 +70,7 @@ internal class FightView(int width, int height)
         {
             return enemy.Symbol;
         }
-        else 
+        else
         {
             return ".";
         }
@@ -93,7 +93,7 @@ internal class FightView(int width, int height)
         return consistentCellWidth;
     }
 
-    internal string ReadWeapon(IHero player)
+    public string ReadWeapon(IHero player)
     {
         var weapons = new StringBuilder();
         foreach (var weapon in player.Weapons)
