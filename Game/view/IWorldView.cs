@@ -13,11 +13,11 @@ internal interface IWorldView
 
     internal void ClearScreen();
 
-    internal string GetGameOverText();
+    internal string GetGameOverText(IHero hero);
 
-    internal string GetWarningMessageText(Hero player, string msg);
+    internal string GetWarningMessageText(IHero hero, string msg);
 
-    internal string GetIsGoalText();
+    internal string GetIsGoalText(IGameEntity flag);
 
     internal void WriteFightInfo(IWorldService world, IEnemy enemy, bool waitForUserInput);
 }

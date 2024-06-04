@@ -88,7 +88,7 @@ internal class WorldView : IWorldView
         );
     }
 
-    private string GetPlayerPositionText(Hero player)
+    private string GetPlayerPositionText(IHero player)
     {
         return GetConsistentWidth(
             $"{player.Symbol} {player.Name} position: [{player.Position.x}, {player.Position.y}]" +
@@ -126,7 +126,7 @@ internal class WorldView : IWorldView
         _previousDrawnMap = null;
     }
 
-    public string GetWarningMessageText(Hero player, string msg)
+    public string GetWarningMessageText(IHero player, string msg)
     {
         return GetConsistentWidth(
             $"⚠  {msg}",
@@ -134,18 +134,18 @@ internal class WorldView : IWorldView
         );
     }
 
-    public string GetGameOverText()
+    public string GetGameOverText(IHero hero)
     {
         return GetConsistentWidth(
-            "⚠  Game over",
+            $"⚠  Game over {hero.Name} {hero.Symbol} your health is {hero.Health}",
             100
         ); 
     }
 
-    public string GetIsGoalText()
+    public string GetIsGoalText(IGameEntity flag)
     {
         return GetConsistentWidth(
-            "🎉 Congratulation",
+            $"🎉 Congratulation you picked flag at position ({flag.Position.x}, {flag.Position.y})",
             100
         );
     }
@@ -172,6 +172,11 @@ internal class WorldView : IWorldView
         {
             Console.ReadLine();
         }
+    }
+
+    string IWorldView.GetWarningMessageText(IHero hero, string msg)
+    {
+        throw new NotImplementedException();
     }
 }
 

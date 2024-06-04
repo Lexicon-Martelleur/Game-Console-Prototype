@@ -33,7 +33,7 @@ internal class WorldController(
     {
         SynchronizationContext.SetSynchronizationContext(_syncronizationContext);
         worldView.ClearScreen();
-        worldService.InitWorld(OnWorldTimeChange, OnGoal);
+        worldService.InitWorld(OnWorldTimeChange, OnGoal, OnGameOver);
         do
         {
             if (_closeEnemy != null)
@@ -48,8 +48,15 @@ internal class WorldController(
     private void OnGoal(Object? source, WorldEventArgs<IGameEntity> e)
     {
         _goal = true;
-        var isGoalMsg = worldView.GetIsGoalText();
+        var isGoalMsg = worldView.GetIsGoalText(e.Data);
         DrawWorldWithLock(worldService.GetWorldSnapShot(), isGoalMsg);
+    }
+
+    private void OnGameOver(Object? source, WorldEventArgs<IHero> e)
+    {
+        _gameOver = true;
+        var gameOverMsg = worldView.GetGameOverText(e.Data);
+        DrawWorldWithLock(worldService.GetWorldSnapShot(), gameOverMsg);
     }
 
     private void OnWorldTimeChange(Object? source, Timers.ElapsedEventArgs e)
@@ -84,11 +91,11 @@ internal class WorldController(
     private void FightExistingEnemy(IEnemy enemy)
     {
         fightController.StartFight(worldService.Hero, enemy);
-        if (!worldService.IsGameOver(out _gameOver))
+        if (worldService.Hero.Health != 0)
         {
             worldService.RemoveFightingEnemyFromWorld(enemy);
             _closeEnemy = null;
-            worldService.InitWorld(OnWorldTimeChange, OnGoal);
+            worldService.InitWorld(OnWorldTimeChange, OnGoal, OnGameOver);
             worldView.ClearScreen();
         }
     }
@@ -107,23 +114,9 @@ internal class WorldController(
         }
     }
 
+    // TODO! Use events to communicate back.
     private void HandleGameState(bool waitForUserInput = false)
     {
-        if (worldService.IsGameOver(out _gameOver))
-        {
-            var gameOverMsg = worldView.GetGameOverText();
-            DrawWorldWithLock(worldService.GetWorldSnapShot(), gameOverMsg);
-        }
-
-        // worldService.PickupExistingFlag();
-
-        // TODO When goal use next world if exist do not end game.
-        //if (worldService.IsGoal(out _goal))
-        //{
-        //    var isGoalMsg = worldView.GetIsGoalText();
-        //    DrawWorldWithLock(worldService.GetWorldSnapShot(), isGoalMsg);
-        //}
-
         _closeEnemy = worldService.FightingEnemy;
         if (_closeEnemy != null)
         {

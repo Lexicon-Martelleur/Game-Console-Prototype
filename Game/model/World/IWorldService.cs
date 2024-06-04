@@ -18,11 +18,14 @@ internal interface IWorldService
 
     internal IEnumerable<IGameEntity> GameEntities { get; }
 
+    internal event EventHandler<WorldEventArgs<IHero>>? GameOver;
+
     internal Timers.Timer WorldTimer { get; set; }
 
     internal void InitWorld(
         Timers.ElapsedEventHandler onWorldTimeChange,
-        EventHandler<WorldEventArgs<IGameEntity>> onGoal
+        EventHandler<WorldEventArgs<IGameEntity>> onGoal,
+        EventHandler<WorldEventArgs<IHero>> onGameOver
     );
 
     internal WorldMap GetWorldSnapShot();
@@ -41,9 +44,7 @@ internal interface IWorldService
 
     internal void RemoveFightingEnemyFromWorld(IEnemy enemy);
 
-    internal bool IsGameOver(out bool isGameOver);
-
-    internal bool IsGoal(out bool isGoal);
+    // internal bool IsGameOver(out bool isGameOver);
 
     internal string GetTerrainInfo();
 

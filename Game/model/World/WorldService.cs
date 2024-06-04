@@ -28,7 +28,11 @@ internal class WorldService(
 
     private EventHandler<WorldEventArgs<IGameEntity>>? _onGoalWrapper;
 
+    private EventHandler<WorldEventArgs<IHero>>? _onGameOverWrapper;
+
     private WorldMap? _worldMap;
+
+    public event EventHandler<WorldEventArgs<IHero>>? GameOver;
 
     public Timers.Timer WorldTimer {
         get => _worldTimer;
@@ -131,7 +135,8 @@ internal class WorldService(
 
     public void InitWorld(
         Timers.ElapsedEventHandler onWorldTimeChange,
-        EventHandler<WorldEventArgs<IGameEntity>> onGoal
+        EventHandler<WorldEventArgs<IGameEntity>> onGoal,
+        EventHandler<WorldEventArgs<IHero>> onGameOver
     )
     {
         _onWorldTimeChangeWrapper = (source, e) =>
@@ -144,8 +149,9 @@ internal class WorldService(
         WorldTimer.AutoReset = true;
         WorldTimer.Enabled = true;
 
-        //Flag.Collected += OnFlagPicked;
-
+        
+        // TODO Add update builder here which
+        // will lead to a new world
         _onGoalWrapper = (source, e) =>
         {
             OnFlagPicked(source, e);
@@ -153,21 +159,18 @@ internal class WorldService(
             CloseWorld();
         };
         Flag.Collected += _onGoalWrapper;
+
+        _onGameOverWrapper = (source, e) =>
+        {
+            onGameOver(source, e);
+            CloseWorld();
+        };
+        GameOver += _onGameOverWrapper;
     }
 
     private void OnFlagPicked(Object? source, WorldEventArgs<IGameEntity> e)
     {
         Hero.Flags.Append(e.Data);
-        //var newEntitites = new List<IGameEntity>();
-        //foreach (var entity in GameEntities)
-        //{
-        //    if (entity.Id != e.Data.Id)
-        //    {
-        //        newEntitites.Add(entity);
-        //    }
-        //};
-        //GameEntities = newEntitites;
-        // CloseWorld();
     }
 
     private void UpdateEnenmyPositions()
@@ -225,6 +228,7 @@ internal class WorldService(
             );
         }
         UpdatePlayerPosition(nextPos);
+        IsGameOver();
         PickupExistingFlag();
     }
 
@@ -274,29 +278,27 @@ internal class WorldService(
         Hero.Flags.Append(token);
     }
 
-    public bool IsGameOver(out bool isGameOver)
+    private void IsGameOver()
     {
-        isGameOver = Hero.Health == 0;
+        var isGameOver = Hero.Health == 0;
         if (isGameOver)
         {
-            CloseWorld();
+            OnGameOver();
         }
-        return isGameOver;
     }
 
-    public bool IsGoal(out bool isGoal)
+    private void OnGameOver()
     {
-        isGoal = Hero.Position == flag.Position;
-        if (isGoal) {
-            CloseWorld();
-        }
-        return isGoal;
+        var e = new WorldEventArgs<IHero>(Hero);
+        GameOver?.Invoke(this, e);
+        CloseWorld();
     }
 
     public void CloseWorld()
     {
         WorldTimer.Elapsed -= _onWorldTimeChangeWrapper;
         Flag.Collected -= _onGoalWrapper;
-        WorldTimer.Close();  
+        GameOver -= _onGameOverWrapper;
+        WorldTimer.Close();
     }
 }
