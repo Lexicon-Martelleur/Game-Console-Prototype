@@ -1,4 +1,5 @@
-﻿using Game.Model.Map;
+﻿using Game.Model.Base;
+using Game.Model.GameToken;
 using Game.Model.Weapon;
 
 namespace Game.Model.GameEntity;
@@ -11,7 +12,7 @@ public class Hero(uint id, Position position) : IHero
 
     private IEnumerable<IFlag> _flags = [];
 
-    private IEnumerable<ICollectable<IGameEntity>> _tokens = [];
+    private IEnumerable<IGameToken> _tokens = [];
 
     public string Symbol => "🐝";
 
@@ -34,7 +35,7 @@ public class Hero(uint id, Position position) : IHero
         set => _flags = value;
     }
 
-    public IEnumerable<ICollectable<IGameEntity>> Tokens
+    public IEnumerable<IGameToken> Tokens
     {
         get => _tokens;
         set => _tokens = value;

@@ -1,7 +1,9 @@
 ﻿using System.Text;
 
 using Game.Constant;
+using Game.Model.Base;
 using Game.Model.GameEntity;
+using Game.Model.GameToken;
 using Game.Model.Map;
 using Game.Model.World;
 
@@ -173,9 +175,12 @@ internal class WorldView : IWorldView
         }
     }
 
-    string IWorldView.GetWarningMessageText(IHero hero, string msg)
+    public string GetPickedUpTokenText(IDiscoverableArtifact item)
     {
-        throw new NotImplementedException();
+        return GetConsistentWidth(
+            $"ℹ️ You picked up {item.Name} {item.Symbol} at position ({item.Position.x}, {item.Position.y})",
+            100
+        );
     }
 }
 

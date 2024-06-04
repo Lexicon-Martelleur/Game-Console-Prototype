@@ -1,25 +1,28 @@
-﻿using Game.Model.GameEntity;
+﻿using Game.Model.Base;
+using Game.Model.GameEntity;
 using Game.Model.Map;
 using Game.Model.Terrain;
 
 namespace Game.Model.World;
 
-public class BridgeWorldBuilder(int width, int height) : IWorldBuilder
+// TODO Rename to BridgeWorld
+// TODO MOve Hero, Flag and GameEntities to this class
+public class BridgeWorldBuilder(int _width, int _height) : IWorldBuilder
 {   
-    public WorldMap CreateWorldSnapShot(IEnumerable<IGameEntity> gameEntities)
+    public WorldMap CreateWorldSnapShot(IEnumerable<IDiscoverableArtifact> worldItems)
     {
-        return new WorldMap(height, width, UpdateWorld(gameEntities));
+        return new WorldMap(_height, _width, UpdateWorld(worldItems));
     }
 
-    private Cell[,] UpdateWorld(IEnumerable<IGameEntity> entities)
+    private Cell[,] UpdateWorld(IEnumerable<IDiscoverableArtifact> worldItems)
     {
-        var cells = new Cell[height, width];
-        for (int y = 0; y < height; y++)
+        var cells = new Cell[_height, _width];
+        for (int y = 0; y < _height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (int x = 0; x < _width; x++)
             {
                 Position position = new Position(x, y);
-                IGameEntity? gameEntity = GetEntityAtPosition(entities, position);
+                IDiscoverableArtifact? gameEntity = GetItemAtPosition(worldItems, position);
                 ITerrain terrain = GetTerrainAtPosition(position);
                 cells[y, x] = new Cell(position, terrain, gameEntity);
             }
@@ -27,15 +30,15 @@ public class BridgeWorldBuilder(int width, int height) : IWorldBuilder
         return cells;
     }
 
-    private IGameEntity? GetEntityAtPosition(
-        IEnumerable<IGameEntity> entities,
+    private IDiscoverableArtifact? GetItemAtPosition(
+        IEnumerable<IDiscoverableArtifact> worldItems,
         Position position)
     {
-        foreach (IGameEntity entity in entities)
+        foreach (IDiscoverableArtifact item in worldItems)
         {
-            if (entity.Position == position)
+            if (item.Position == position)
             {
-                return entity;
+                return item;
             }
         }
         return null;
@@ -88,8 +91,8 @@ public class BridgeWorldBuilder(int width, int height) : IWorldBuilder
     public bool IsOutsideMap(Position position)
     {
         return (position.x < 0 ||
-            position.x >= width ||
+            position.x >= _width ||
             position.y < 0 ||
-            position.y >= height);
+            position.y >= _height);
     }
 }

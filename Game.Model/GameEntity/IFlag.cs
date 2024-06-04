@@ -1,6 +1,8 @@
-﻿namespace Game.Model.GameEntity;
+﻿using Game.Model.Base;
 
-public interface IFlag: ICollectable<IGameEntity>
+namespace Game.Model.GameEntity;
+
+public interface IFlag: ICollectable<IGameEntity>, IGameEntity 
 {
     public uint GamePoints { get; }
 }

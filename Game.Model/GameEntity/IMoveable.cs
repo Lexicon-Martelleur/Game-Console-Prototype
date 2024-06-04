@@ -1,4 +1,4 @@
-﻿using Game.Model.Map;
+﻿using Game.Model.Base;
 
 namespace Game.Model.GameEntity;
 

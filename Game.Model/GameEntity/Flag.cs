@@ -1,5 +1,5 @@
-﻿using Game.Model.Map;
-using Game.Model.Events;
+﻿using Game.Model.Events;
+using Game.Model.Base;
 
 namespace Game.Model.GameEntity;
 
@@ -17,7 +17,7 @@ public class Flag(uint id, Position position, uint gamePoints) : IFlag
 
     public uint GamePoints => gamePoints;
 
-    public bool PickUpExistingEntity(IHero hero, out IGameEntity entity)
+    public bool PickUpExistingItem(IHero hero, out IGameEntity entity)
     {
         entity = this;
         var isCollectablePostion = hero.Position == Position;

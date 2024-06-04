@@ -2,7 +2,7 @@
 
 namespace Game.Model.Weapon;
 
-public interface IWeapon : IGameArtefact
+public interface IWeapon : IGameArtifact
 {
     public uint ReduceHealth { get; }
 }

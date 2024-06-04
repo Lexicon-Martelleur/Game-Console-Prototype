@@ -2,7 +2,7 @@
 
 namespace Game.Model.Terrain;
 
-public interface ITerrain : IGameArtefact
+public interface ITerrain : IGameArtifact
 {
     public ConsoleColor Color { get; }
 }

@@ -6,6 +6,8 @@ using Game.Model.Map;
 using Game.Model.World;
 using Game.view;
 using Game.Model.Events;
+using Game.Model.GameToken;
+using Game.Model.Base;
 
 namespace Game.Controller;
 
@@ -46,7 +48,7 @@ internal class WorldController(
     private WorldEvents GetWorldEvents()
     {
         return (
-            OnWorldTime, OnGoal, OnGameOver, OnFight
+            OnWorldTime, OnGoal, OnGameOver, OnFight, OnGameToken
         );
     }
 
@@ -68,6 +70,12 @@ internal class WorldController(
     {
         bool waitForUserInput = true;
         SetupFightInfoState(e.Data, waitForUserInput);
+    }
+
+    private void OnGameToken(Object? source, WorldEventArgs<IDiscoverableArtifact> e)
+    {
+        var pickedUpTokenMsg = worldView.GetPickedUpTokenText(e.Data);
+        _additionalMessage = pickedUpTokenMsg;
     }
 
     private void OnWorldTime(Object? source, Timers.ElapsedEventArgs e)
@@ -107,7 +115,6 @@ internal class WorldController(
         fightController.StartFight(world.Hero, enemy);
         if (!world.IsHeroDead())
         {
-            world.RemoveFightingEnemyFromWorld(enemy);
             world.InitWorld(GetWorldEvents());
             worldView.ClearScreen();
         }

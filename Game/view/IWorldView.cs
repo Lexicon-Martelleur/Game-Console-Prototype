@@ -1,5 +1,7 @@
 ﻿using Game.Constant;
+using Game.Model.Base;
 using Game.Model.GameEntity;
+using Game.Model.GameToken;
 using Game.Model.Map;
 using Game.Model.World;
 
@@ -20,4 +22,6 @@ internal interface IWorldView
     internal string GetIsGoalText(IGameEntity flag);
 
     internal void WriteFightInfo(IWorld world, IEnemy enemy, bool waitForUserInput);
+    
+    internal string GetPickedUpTokenText(IDiscoverableArtifact item);
 }

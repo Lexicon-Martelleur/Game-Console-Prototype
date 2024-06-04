@@ -1,13 +1,14 @@
-﻿using Timers = System.Timers;
-
-using Game.Model.GameEntity;
+﻿using Game.Model.GameEntity;
 using Game.Model.Map;
 using Game.Model.Weapon;
 using Game.Constant;
 using Game.Model.Events;
+using Game.Model.Base;
+using Game.Model.GameToken;
 
 namespace Game.Model.World;
 
+// TODO Rename to IWorldService
 public interface IWorld
 {
     public IHero Hero { get; }
@@ -16,13 +17,14 @@ public interface IWorld
 
     public IEnemy? FightingEnemy { get; }
 
-    public IEnumerable<IGameEntity> GameEntities { get; }
+    // TODO Use when updating world
+    public IEnumerable<IDiscoverableArtifact> WorldItems { get; set; }
 
-    public event EventHandler<WorldEventArgs<IHero>>? GameOver;
+    public event EventHandler<WorldEventArgs<IHero>>? GameOverEvent;
 
-    public event EventHandler<WorldEventArgs<IEnemy>>? Fight;
+    public event EventHandler<WorldEventArgs<IEnemy>>? FightEvent;
 
-    // public Timers.Timer WorldTimer { get; set; }
+    public event EventHandler<WorldEventArgs<IDiscoverableArtifact>>? PickTokenEvent;
 
     public void InitWorld(WorldEvents worldEvents);
 
@@ -40,7 +42,7 @@ public interface IWorld
 
     public void UpdateEntityHealth(ICreature entity, IWeapon weapon);
 
-    public void RemoveFightingEnemyFromWorld(IEnemy enemy);
+    public void RemoveEnemyFromWorld(IEnemy enemy);
 
     public string GetTerrainInfo();
 

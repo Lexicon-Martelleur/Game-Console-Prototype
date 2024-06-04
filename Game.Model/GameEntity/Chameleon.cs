@@ -1,4 +1,4 @@
-﻿using Game.Model.Map;
+﻿using Game.Model.Base;
 using Game.Model.Weapon;
 
 namespace Game.Model.GameEntity;

@@ -1,11 +1,8 @@
 ﻿using Game.Model.Base;
-using Game.Model.Map;
 
 namespace Game.Model.GameEntity;
 
-public interface IGameEntity : IGameArtefact
+public interface IGameEntity : IDiscoverableArtifact
 {
     public uint Id { get; }
-
-    public Position Position { get; }
 }

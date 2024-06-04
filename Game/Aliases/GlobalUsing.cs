@@ -11,5 +11,9 @@
     
     System.EventHandler<Game.Model.Events.WorldEventArgs<
         Game.Model.GameEntity.IEnemy
-    >> OnFight
+    >> OnFight,
+
+    System.EventHandler<Game.Model.Events.WorldEventArgs<
+        Game.Model.Base.IDiscoverableArtifact
+    >> OnGameToken
 );

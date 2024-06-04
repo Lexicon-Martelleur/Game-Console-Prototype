@@ -1,6 +1,6 @@
 ﻿namespace Game.Model.Base;
 
-public interface IGameArtefact
+public interface IGameArtifact
 {
     public string Symbol { get; }
 

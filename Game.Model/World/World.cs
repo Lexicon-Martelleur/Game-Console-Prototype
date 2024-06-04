@@ -8,13 +8,18 @@ using Game.Model.Weapon;
 using Game.Model.Terrain;
 using Game.Constant;
 using Game.Model.Events;
+using Game.Model.Base;
+using Game.Model.GameToken;
 
 namespace Game.Model.World;
 
+// TODO Rename to WorldService
+// TODO Move Hero, Flag and GameEntities to Builder type and rename that
+// type to World. Abstract functionality that controller may need.
 public class World(
     IHero hero,
     IFlag flag,
-    IEnumerable<IGameEntity> entities,
+    IEnumerable<IDiscoverableArtifact> worldItems,
     IWorldBuilder worldBuilder) : IWorld
 {
     private bool _oddTimeFrame = false;
@@ -27,19 +32,17 @@ public class World(
         OnWorldTime: (source, e) => { },
         OnGoal: (source, e) => { },
         OnGameOver: (source, e) => { },
-        OnFight: (source, e) => { } 
+        OnFight: (source, e) => { },
+        OnGameToken: (source, e) => { }
     );
 
     private WorldMap? _worldMap;
 
-    public event EventHandler<WorldEventArgs<IHero>>? GameOver;
+    public event EventHandler<WorldEventArgs<IHero>>? GameOverEvent;
 
-    public event EventHandler<WorldEventArgs<IEnemy>>? Fight;
+    public event EventHandler<WorldEventArgs<IEnemy>>? FightEvent;
 
-    //public Timers.Timer WorldTimer {
-    //    get => _worldTimer;
-    //    set => _worldTimer = value;
-    //}
+    public event EventHandler<WorldEventArgs<IDiscoverableArtifact>>? PickTokenEvent;
 
     public IHero Hero { get => hero; }
 
@@ -50,15 +53,15 @@ public class World(
         private set => _fightingEnemy = value;
     }
 
-    public IEnumerable<IGameEntity> GameEntities {
-        get => entities.Append(hero).Append(flag);
-        private set => entities = value;
+    public IEnumerable<IDiscoverableArtifact> WorldItems {
+        get => worldItems.Append(hero).Append(flag);
+        set => worldItems = value;
     }
 
     public WorldMap GetWorldSnapShot()
     {
         _worldMap = worldBuilder.CreateWorldSnapShot(
-            entities.Append(Hero).Append(flag)
+            worldItems.Append(Hero).Append(flag)
         );
         return _worldMap;
     }
@@ -76,18 +79,36 @@ public class World(
     }
 
     // TODO Implement equality check
-    public void RemoveFightingEnemyFromWorld(IEnemy enemy)
+    public void RemoveEnemyFromWorld(IEnemy enemy)
     {
-        var newEntitites = new List<IGameEntity>();
-        foreach (var entity in GameEntities)
+        var newWorldItems = new List<IDiscoverableArtifact>();
+        foreach (var item in WorldItems)
         {
-            if (entity.Id != enemy.Id)
+            if (ArtifactIsNotEnenmy(item, enemy))
             {
-                newEntitites.Add(entity);
+                newWorldItems.Add(item);
             }
         };
-        GameEntities = newEntitites;
+        WorldItems = newWorldItems;
         FightingEnemy = null;
+    }
+
+    private bool ArtifactIsNotEnenmy(IDiscoverableArtifact item, IEnemy enemy)
+    {
+        var isNotEnenmy = false;
+        if (item is IGameEntity)
+        {
+            var entity = (IGameEntity)item;
+            if (entity.Id != enemy.Id)
+            {
+                isNotEnenmy = true;
+            }
+        }
+        else
+        {
+            isNotEnenmy = true;
+        }
+        return isNotEnenmy;
     }
 
     private void UpdatePlayerHealth(Position position)
@@ -163,13 +184,17 @@ public class World(
             worldEvents.OnGameOver(source, e);
             CloseWorld();
         };
-        GameOver += _worldEventWrapper.OnGameOver;
+        GameOverEvent += _worldEventWrapper.OnGameOver;
 
-        _worldEventWrapper.OnFight = (source, e) =>
+        _worldEventWrapper.OnFight = worldEvents.OnFight;
+        FightEvent += _worldEventWrapper.OnFight;
+
+        _worldEventWrapper.OnGameToken = (source, e) =>
         {
-            worldEvents.OnFight(source, e);
+            OnPickedToken(source, e);
+            worldEvents.OnGameToken(source, e);
         };
-        Fight += _worldEventWrapper.OnFight;
+        PickTokenEvent += _worldEventWrapper.OnGameToken;
     }
 
     private void OnFlagPicked(Object? source, WorldEventArgs<IGameEntity> e)
@@ -177,16 +202,30 @@ public class World(
         Hero.Flags.Append(e.Data);
     }
 
+    private void OnPickedToken(Object? source, WorldEventArgs<IDiscoverableArtifact> e)
+    {
+        var newWorldItems = new List<IDiscoverableArtifact>();
+        foreach (var item in WorldItems)
+        {
+            if (e.Data.Position != item.Position)
+            {
+                newWorldItems.Add(item);
+            }
+
+        }
+        WorldItems = newWorldItems;
+    }
+
     private void UpdateEnenmyPositions()
     {
         var newPossition = _oddTimeFrame ? -1 : 1;
         _oddTimeFrame = !_oddTimeFrame;
-        foreach (IGameEntity entity in entities)
+        foreach (IDiscoverableArtifact item in worldItems)
         {
-            if (entity is IEnemy)
+            if (item is IEnemy)
             {
-                (entity as IEnemy)?.UpdatePosition(
-                    new Position(entity.Position.x + newPossition, entity.Position.y)
+                (item as IEnemy)?.UpdatePosition(
+                    new Position(item.Position.x + newPossition, item.Position.y)
                 );
             }
         }
@@ -195,11 +234,11 @@ public class World(
     private IEnemy? GetFightingEnemy()
     {
         IEnemy? enemy = null;
-        foreach (IGameEntity entity in GameEntities)
+        foreach (IDiscoverableArtifact item in WorldItems)
         {
-            if (entity is IEnemy && IsFightPosition(entity))
+            if (item is IEnemy && IsFightPosition(item))
             {
-                enemy = entity as IEnemy;
+                enemy = item as IEnemy;
                 break;
             }
         };
@@ -214,6 +253,7 @@ public class World(
         FightingEnemy = GetFightingEnemy(); // TODO Event?
         IsGameOver();
         IsFight();
+        PickupExistingHeart();
         PickupExistingFlag();
     }
 
@@ -254,24 +294,33 @@ public class World(
 
     private void PickupExistingFlag()
     {
-        if (flag.PickUpExistingEntity(Hero, out IGameEntity entity))
+        if (flag.PickUpExistingItem(Hero, out IGameEntity entity))
         {
             Hero.Flags.Append(entity);
         }   
     }
 
-    //public void PickupExistingToken()
-    //{
-    //    foreach (var entity in GameEntities)
-    //    {
-    //        if (entity is ICollectable<IGameEntity> &&
-    //            entity.Position == Hero.Position)
-    //        {
-    //            return entity as ICollectable<IGameEntity>;
-    //        }
-    //    }
-    //    return null;
-    //}
+    public void PickupExistingHeart()
+    {
+        foreach (var item in WorldItems)
+        {
+            AddHealthToPlayer(item);
+        }
+    }
+
+    private void AddHealthToPlayer(IDiscoverableArtifact item)
+    {
+        if (item is IHeart)
+        {
+            var heart = item as IHeart;
+            if (heart != null && 
+                heart.PickUpExistingItem(Hero, out IDiscoverableArtifact artifact))
+            {
+                var eventArgs = new WorldEventArgs<IDiscoverableArtifact>(artifact);
+                PickTokenEvent?.Invoke(this, eventArgs);
+            }
+        }
+    }
 
     public void GiveTokenToHero(ICollectable<IGameEntity> token)
     {
@@ -290,31 +339,31 @@ public class World(
     private void OnGameOver()
     {
         var e = new WorldEventArgs<IHero>(Hero);
-        GameOver?.Invoke(this, e);
+        GameOverEvent?.Invoke(this, e);
         CloseWorld();
     }
 
     private void IsFight()
     {
-        foreach (IGameEntity entity in GameEntities)
+        foreach (IDiscoverableArtifact item in WorldItems)
         {
-            if (entity is IEnemy && IsFightPosition(entity))
+            if (item is IEnemy && IsFightPosition(item))
             {
-                OnFight((IEnemy)entity);
+                OnFight((IEnemy)item);
                 break;
             }
         };
     }
 
-    private bool IsFightPosition(IGameEntity entity)
+    private bool IsFightPosition(IDiscoverableArtifact item)
     {
-        return entity.Position == Hero.Position;
+        return item.Position == Hero.Position;
     }
 
     private void OnFight(IEnemy enemy)
     {
         var e = new WorldEventArgs<IEnemy>(enemy);
-        Fight?.Invoke(this, e);
+        FightEvent?.Invoke(this, e);
     }
 
     public bool IsFightOver(IHero player, IEnemy enemy)
@@ -331,8 +380,9 @@ public class World(
     {
         _worldTimer.Elapsed -= _worldEventWrapper.OnWorldTime;
         Flag.Collected -= _worldEventWrapper.OnGoal;
-        GameOver -= _worldEventWrapper.OnGameOver;
-        Fight -= _worldEventWrapper.OnFight;
+        GameOverEvent -= _worldEventWrapper.OnGameOver;
+        FightEvent -= _worldEventWrapper.OnFight;
+        PickTokenEvent -= _worldEventWrapper.OnGameToken;
         _worldTimer.Close();
     }
 }

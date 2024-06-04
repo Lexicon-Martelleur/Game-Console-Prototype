@@ -22,6 +22,11 @@ internal class FightController(IFightView view, IWorld world)
             world.UpdateEntityHealth(player, enemy.Weapon);
             
         } while (!world.IsFightOver(player, enemy));
+        
+        if (!world.IsHeroDead())
+        {
+            world.RemoveEnemyFromWorld(enemy);
+        }
     }
 
     private uint HitOpponent(IWeapon weapon)
