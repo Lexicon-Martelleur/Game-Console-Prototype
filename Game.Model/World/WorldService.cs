@@ -5,7 +5,6 @@ using Timers = System.Timers;
 using Game.Model.GameEntity;
 using Game.Model.Map;
 using Game.Model.Weapon;
-using Game.Model.Terrain;
 using Game.Constant;
 using Game.Model.Events;
 using Game.Model.Base;
@@ -13,14 +12,7 @@ using Game.Model.GameToken;
 
 namespace Game.Model.World;
 
-// TODO Rename to WorldService
-// TODO Move Hero, Flag and GameEntities to Builder type and rename that
-// type to World. Abstract functionality that controller may need.
-public class World(
-    IHero hero,
-    IFlag flag,
-    IEnumerable<IDiscoverableArtifact> worldItems,
-    IWorldBuilder worldBuilder) : IWorld
+public class WorldService(IHero hero, IWorld world) : IWorldService
 {
     private bool _oddTimeFrame = false;
 
@@ -36,8 +28,6 @@ public class World(
         OnGameToken: (source, e) => { }
     );
 
-    private WorldMap? _worldMap;
-
     public event EventHandler<WorldEventArgs<IHero>>? GameOverEvent;
 
     public event EventHandler<WorldEventArgs<IEnemy>>? FightEvent;
@@ -46,24 +36,15 @@ public class World(
 
     public IHero Hero { get => hero; }
 
-    public IFlag Flag { get => flag; }
-
     public IEnemy? FightingEnemy { 
         get => _fightingEnemy;
         private set => _fightingEnemy = value;
     }
 
-    public IEnumerable<IDiscoverableArtifact> WorldItems {
-        get => worldItems.Append(hero).Append(flag);
-        set => worldItems = value;
-    }
 
     public WorldMap GetWorldSnapShot()
     {
-        _worldMap = worldBuilder.CreateWorldSnapShot(
-            worldItems.Append(Hero).Append(flag)
-        );
-        return _worldMap;
+        return world.CreateWorldSnapShot(Hero);
     }
 
     public void InitWorld(WorldEvents worldEvents)
@@ -87,7 +68,7 @@ public class World(
             worldEvents.OnGoal(source, e);
             CloseWorld();
         };
-        Flag.Collected += _worldEventWrapper.OnGoal;
+        world.Flag.Collected += _worldEventWrapper.OnGoal;
 
         _worldEventWrapper.OnGameOver = (source, e) =>
         {
@@ -110,41 +91,41 @@ public class World(
     private void OnFlagPicked(Object? source, WorldEventArgs<IGameEntity> e)
     {
         Hero.Flags.Append(e.Data);
-        WorldItems = WorldItems.Where(item => e.Data.Position != item.Position);
+        world.WorldItems = world.WorldItems.Where(item => e.Data.Position != item.Position);
     }
 
     private void OnPickedToken(Object? source, WorldEventArgs<IDiscoverableArtifact> e)
     {
-        WorldItems = WorldItems.Where(item => e.Data.Position != item.Position);
+        world.WorldItems = world.WorldItems.Where(item => e.Data.Position != item.Position);
     }
 
     private void UpdateEnenmyPositions()
     {
         var newPossition = _oddTimeFrame ? -1 : 1;
         _oddTimeFrame = !_oddTimeFrame;
-        foreach (IDiscoverableArtifact item in worldItems)
+        foreach (var enemy in world.WorldItems.OfType<IEnemy>())
         {
-            if (item is IEnemy)
-            {
-                (item as IEnemy)?.UpdatePosition(
-                    new Position(item.Position.x + newPossition, item.Position.y)
-                );
-            }
+            enemy.UpdatePosition(
+                new Position(enemy.Position.x + newPossition, enemy.Position.y)
+            );
         }
     }
 
     private IEnemy? GetFightingEnemy()
     {
-        IEnemy? enemy = null;
-        foreach (IDiscoverableArtifact item in WorldItems)
-        {
-            if (item is IEnemy && IsFightPosition(item))
-            {
-                enemy = item as IEnemy;
-                break;
-            }
-        };
-        return enemy;
+        return world.WorldItems
+            .OfType<IEnemy>()
+            .FirstOrDefault(IsFightPosition);
+    }
+
+    private bool IsFightPosition(IDiscoverableArtifact item)
+    {
+        return item.Position == Hero.Position;
+    }
+
+    public IFlag GetWorldFlag()
+    {
+        return world.Flag;
     }
 
     public void MovePlayerToNextPosition(Move move)
@@ -183,8 +164,8 @@ public class World(
 
     private bool IsValidPosition(Position position)
     {
-        if (worldBuilder.IsStoneTerrain(position) ||
-            worldBuilder.IsOutsideMap(position))
+        if (world.IsStoneTerrain(position) ||
+            world.IsOutsideMap(position))
         {
             return false;
         }
@@ -196,11 +177,11 @@ public class World(
 
     private void UpdatePlayerHealth(Position position)
     {
-        if (worldBuilder.IsCliffTerrain(position) ||
-            worldBuilder.IsFireTerrain(position) ||
-            worldBuilder.IsWaterTerrain(position))
+        if (world.IsCliffTerrain(position) ||
+            world.IsFireTerrain(position) ||
+            world.IsWaterTerrain(position))
         {
-            var terrain = GetDangerousTerrain(position);
+            var terrain = world.GetDangerousTerrain(position);
             if (hero.Health < (terrain?.ReduceHealth() ?? 0))
             {
                 hero.Health = 0;
@@ -212,25 +193,9 @@ public class World(
         }
     }
 
-    private IDangerousTerrain? GetDangerousTerrain(Position position)
-    {
-        Cell? findCell = null;
-        var worldMapSnapShot = _worldMap ?? GetWorldSnapShot();
-        foreach (Cell cell in worldMapSnapShot.Cells)
-        {
-            if (cell.Position == position)
-            {
-                findCell = cell;
-                break;
-            }
-        }
-        var terrain = findCell?.Terrain;
-        return terrain as IDangerousTerrain;
-    }
-
     private void PickupExistingFlag()
     {
-        if (flag.PickUpExistingItem(Hero, out IGameEntity entity))
+        if (world.Flag.PickUpExistingItem(Hero, out IGameEntity entity))
         {
             Hero.Flags.Append(entity);
         }   
@@ -238,10 +203,7 @@ public class World(
 
     private void PickupExistingHeart()
     {
-        foreach (var item in WorldItems)
-        {
-            AddHealthToPlayer(item);
-        }
+        world.WorldItems.ToList().ForEach(AddHealthToPlayer);
     }
 
     private void AddHealthToPlayer(IDiscoverableArtifact item)
@@ -276,19 +238,13 @@ public class World(
 
     private void IsFight()
     {
-        foreach (IDiscoverableArtifact item in WorldItems)
+        var enemy = world.WorldItems
+            .OfType<IEnemy>()
+            .FirstOrDefault(IsFightPosition);
+        if (enemy != null)
         {
-            if (item is IEnemy && IsFightPosition(item))
-            {
-                OnFight((IEnemy)item);
-                break;
-            }
-        };
-    }
-
-    private bool IsFightPosition(IDiscoverableArtifact item)
-    {
-        return item.Position == Hero.Position;
+            OnFight(enemy);
+        }
     }
 
     private void OnFight(IEnemy enemy)
@@ -299,7 +255,7 @@ public class World(
 
     public void RemoveEnemyFromWorld(IEnemy enemy)
     {
-        WorldItems = WorldItems.Where(item =>
+        world.WorldItems = world.WorldItems.Where(item =>
             enemy.Position != item.Position &&
             ArtifactIsNotEnenmy(item, enemy)
         );
@@ -324,16 +280,9 @@ public class World(
         return isNotEnenmy;
     }
 
-    public string GetTerrainInfo()
+    public string GetTerrainDescription()
     {
-        var fire = new Fire();
-        var water = new Water();
-        var cliff = new Cliff();
-        var stone = new Stone();
-        return $"({stone.Symbol} = -0," +
-            $" {water.Symbol} = -{water.ReduceHealth()}," +
-            $" {fire.Symbol} = -{fire.ReduceHealth()}," +
-            $" {cliff.Symbol} = -{cliff.ReduceHealth()})";
+        return world.GetTerrainDescription();
     }
 
     public void UpdateEntityHealth(ICreature entity, IWeapon weapon)
@@ -361,7 +310,7 @@ public class World(
     public void CloseWorld()
     {
         _worldTimer.Elapsed -= _worldEventWrapper.OnWorldTime;
-        Flag.Collected -= _worldEventWrapper.OnGoal;
+        world.Flag.Collected -= _worldEventWrapper.OnGoal;
         GameOverEvent -= _worldEventWrapper.OnGameOver;
         FightEvent -= _worldEventWrapper.OnFight;
         PickTokenEvent -= _worldEventWrapper.OnGameToken;

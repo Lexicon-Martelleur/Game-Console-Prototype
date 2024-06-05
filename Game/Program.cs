@@ -8,7 +8,7 @@ var worldView = new WorldView();
 
 // TODO Make MOdel public and move to separate project
 var factory = new WorldFactory();
-var world = factory.CreateWorld();
+var world = factory.CreateWorldService();
 
 // Fight
 var fightView = new FightView(

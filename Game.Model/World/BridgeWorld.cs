@@ -1,17 +1,46 @@
 ﻿using Game.Model.Base;
+using Game.Model.Constant;
 using Game.Model.GameEntity;
 using Game.Model.Map;
 using Game.Model.Terrain;
 
 namespace Game.Model.World;
 
-// TODO Rename to BridgeWorld
-// TODO MOve Hero, Flag and GameEntities to this class
-public class BridgeWorldBuilder(int _width, int _height) : IWorldBuilder
-{   
-    public WorldMap CreateWorldSnapShot(IEnumerable<IDiscoverableArtifact> worldItems)
+public class BridgeWorld : IWorld
+{
+    private WorldMap? _worldMap;
+
+    private readonly int _width = WorldConstant.WIDTH;
+    
+    private readonly int _height = WorldConstant.HEIGHT;
+
+    private readonly IFlag _flag;
+
+    private IEnumerable<IDiscoverableArtifact> _worldItems;
+
+    public IFlag Flag { get => _flag; }
+
+    public BridgeWorld(
+        IFlag flag,
+        IEnumerable<IDiscoverableArtifact> worldItems)
     {
-        return new WorldMap(_height, _width, UpdateWorld(worldItems));
+        _flag = flag;
+        _worldItems = worldItems;
+    }
+
+    public IEnumerable<IDiscoverableArtifact> WorldItems
+    {
+        get => _worldItems.Append(_flag); // Append(hero)
+        set => _worldItems = value;
+    }
+
+    public WorldMap CreateWorldSnapShot(IHero hero)
+    {
+        _worldMap = new WorldMap(
+            _height,
+            _width,
+            UpdateWorld(_worldItems.Append(hero)));
+        return _worldMap;
     }
 
     private Cell[,] UpdateWorld(IEnumerable<IDiscoverableArtifact> worldItems)
@@ -94,5 +123,39 @@ public class BridgeWorldBuilder(int _width, int _height) : IWorldBuilder
             position.x >= _width ||
             position.y < 0 ||
             position.y >= _height);
+    }
+
+    public string GetTerrainDescription()
+    {
+        var fire = new Fire();
+        var water = new Water();
+        var cliff = new Cliff();
+        var stone = new Stone();
+        return $"({stone.Symbol} = -0," +
+            $" {water.Symbol} = -{water.ReduceHealth()}," +
+            $" {fire.Symbol} = -{fire.ReduceHealth()}," +
+            $" {cliff.Symbol} = -{cliff.ReduceHealth()})";
+    }
+
+    public IDangerousTerrain? GetDangerousTerrain(Position position)
+    {
+        Cell? findCell = null;
+        var worldCells = _worldMap?.Cells;
+
+        if (worldCells == null)
+        {
+            return null;
+        }
+        
+        foreach (Cell cell in worldCells)
+        {
+            if (cell.Position == position)
+            {
+                findCell = cell;
+                break;
+            }
+        }
+        var terrain = findCell?.Terrain;
+        return terrain as IDangerousTerrain;
     }
 }

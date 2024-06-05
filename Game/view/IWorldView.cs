@@ -9,7 +9,7 @@ namespace Game.view;
 
 internal interface IWorldView
 {
-    internal void DrawWorld(IWorld world, WorldMap map, string msg);
+    internal void DrawWorld(IWorldService worldService, WorldMap map, string msg);
 
     internal Move GetCommand();
 
@@ -21,7 +21,7 @@ internal interface IWorldView
 
     internal string GetIsGoalText(IGameEntity flag);
 
-    internal void WriteFightInfo(IWorld world, IEnemy enemy, bool waitForUserInput);
+    internal void WriteFightInfo(IWorldService worldService, IEnemy enemy, bool waitForUserInput);
     
     internal string GetPickedUpTokenText(IDiscoverableArtifact item);
 }

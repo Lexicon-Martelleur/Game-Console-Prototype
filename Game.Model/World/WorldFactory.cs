@@ -7,7 +7,7 @@ namespace Game.Model.World
 {
     public class WorldFactory
     {
-        public World CreateWorld()
+        public WorldService CreateWorldService()
         {
             // TODO World 2
 
@@ -35,14 +35,12 @@ namespace Game.Model.World
                 heartThree
             ];
 
-            var bridgeWorldBuilder = new BridgeWorldBuilder(
-                WorldConstant.WIDTH,
-                WorldConstant.HEIGHT);
-
-            return new World(
-                heroEntity,
+            var bridgeWorldBuilder = new BridgeWorld(
                 flagBridgeGameWorld,
-                bridgeGameWorldItems,
+                bridgeGameWorldItems);
+
+            return new WorldService(
+                heroEntity,
                 bridgeWorldBuilder
             );
         }

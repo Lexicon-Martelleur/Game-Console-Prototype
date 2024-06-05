@@ -6,7 +6,7 @@ using Game.view;
 
 namespace Game.Controller;
 
-internal class FightController(IFightView view, IWorld world)
+internal class FightController(IFightView view, IWorldService worldService)
 {
     internal void StartFight(IHero player, IEnemy enemy)
     {
@@ -17,15 +17,15 @@ internal class FightController(IFightView view, IWorld world)
             string playerWeaponString = view.ReadWeapon(player);
             foreach (var weapon in player.Weapons)
             {
-                world.UpdateEntityHealth(enemy, weapon);
+                worldService.UpdateEntityHealth(enemy, weapon);
             }
-            world.UpdateEntityHealth(player, enemy.Weapon);
+            worldService.UpdateEntityHealth(player, enemy.Weapon);
             
-        } while (!world.IsFightOver(player, enemy));
+        } while (!worldService.IsFightOver(player, enemy));
         
-        if (!world.IsHeroDead())
+        if (!worldService.IsHeroDead())
         {
-            world.RemoveEnemyFromWorld(enemy);
+            worldService.RemoveEnemyFromWorld(enemy);
         }
     }
 

@@ -20,7 +20,7 @@ internal class WorldView : IWorldView
         Console.Title = ConsoleGame.NAME;
     }
 
-    public void DrawWorld(IWorld world, WorldMap map, string msg)
+    public void DrawWorld(IWorldService worldService, WorldMap map, string msg)
     {
         if (_previousDrawnMap == null)
         {
@@ -46,7 +46,7 @@ internal class WorldView : IWorldView
 
         Console.BackgroundColor = currBackground;
         Console.SetCursorPosition(0, map.Height);
-        Console.WriteLine(GetGameInfoText(world, msg));
+        Console.WriteLine(GetGameInfoText(worldService, msg));
     }
 
     private string GetCellSymbol(Cell cell)
@@ -71,20 +71,20 @@ internal class WorldView : IWorldView
         return consistentCellWidth;
     }
 
-    private string GetGameInfoText(IWorld world, string msg)
+    private string GetGameInfoText(IWorldService worldService, string msg)
     {
         return $"""
-        {GetHealthInfoText(world)}
-        {GetPlayerPositionText(world.Hero)}
-        {GetGoalMessageText(world.Flag)}
+        {GetHealthInfoText(worldService)}
+        {GetPlayerPositionText(worldService.Hero)}
+        {GetGoalMessageText(worldService.GetWorldFlag())}
         {msg}
         """;
     }
 
-    private string GetHealthInfoText(IWorld world)
+    private string GetHealthInfoText(IWorldService worldService)
     {
         return GetConsistentWidth(
-            $"❤️ {world.Hero.Name} health: {world.Hero.Health} {world.GetTerrainInfo()}",
+            $"❤️ {worldService.Hero.Name} health: {worldService.Hero.Health} {worldService.GetTerrainDescription()}",
             100
         );
     }
@@ -101,7 +101,7 @@ internal class WorldView : IWorldView
     private string GetGoalMessageText(IFlag flag)
     {
         return GetConsistentWidth(
-            $"ℹ️ World Task: Take the flag {flag.Symbol} at [{flag.Position.x}, {flag.Position.y}] to win",
+            $"🧭 World Task: Take the flag {flag.Symbol} at [{flag.Position.x}, {flag.Position.y}] to win",
             100
         );
     }
@@ -151,10 +151,13 @@ internal class WorldView : IWorldView
         );
     }
 
-    public void WriteFightInfo(IWorld world, IEnemy enemy, bool waitForUserInput)
+    public void WriteFightInfo(
+        IWorldService worldService,
+        IEnemy enemy,
+        bool waitForUserInput)
     {
         ClearScreen();
-        var player = world.Hero;
+        var player = worldService.Hero;
         var playerWeapons = new StringBuilder();
         foreach (var weapon in player.Weapons)
         {
