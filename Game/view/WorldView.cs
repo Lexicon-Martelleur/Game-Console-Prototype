@@ -3,9 +3,9 @@
 using Game.Constant;
 using Game.Model.Base;
 using Game.Model.GameEntity;
-using Game.Model.GameToken;
 using Game.Model.Map;
 using Game.Model.World;
+using Game.Utility;
 
 namespace Game.view;
 
@@ -53,7 +53,7 @@ internal class WorldView : IWorldView
         Console.WriteLine(GetGameInfoText(worldService, msg));
         if (pause) 
         {
-            Console.ReadKey();
+            Console.In.WaitForEnter();
         }
     }
 
@@ -110,7 +110,7 @@ internal class WorldView : IWorldView
     private string GetGoalMessageText(IWorldService worldService)
     {
         return GetConsistentWidth(
-            $"{worldService.GetGoalMessage()}, press enter to continue to next world",
+            $"{worldService.GetGoalMessage()}",
             100
         );
     }
@@ -155,7 +155,9 @@ internal class WorldView : IWorldView
     public string GetIsGoalText(IGameEntity flag)
     {
         return GetConsistentWidth(
-            $"🎉 Congratulation you picked flag at position ({flag.Position.x}, {flag.Position.y})",
+            $"🎉 Congratulation you picked flag at position " +
+            $"({flag.Position.x}, {flag.Position.y}), " +
+            $"press enter to continue to next world",
             100
         );
     }
@@ -183,7 +185,7 @@ internal class WorldView : IWorldView
         Console.WriteLine(matchInfo);
         if (waitForUserInput) 
         {
-            Console.ReadLine();
+            Console.In.WaitForEnter();
         }
     }
 
@@ -198,7 +200,6 @@ internal class WorldView : IWorldView
     public void WriteGameCongratulation()
     {
         Console.Clear();
-        Console.WriteLine("Congratulation");
+        Console.WriteLine("🎉 Congratulation you finished the game 🎉");
     }
 }
-

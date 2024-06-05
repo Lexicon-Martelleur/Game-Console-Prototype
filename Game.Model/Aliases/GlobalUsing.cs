@@ -8,12 +8,16 @@
     System.EventHandler<Game.Model.Events.WorldEventArgs<
         Game.Model.GameEntity.IHero
     >> OnGameOver,
-    
+
     System.EventHandler<Game.Model.Events.WorldEventArgs<
         Game.Model.GameEntity.IEnemy
-    >> OnFight,
+    >> OnFightStart,
 
     System.EventHandler<Game.Model.Events.WorldEventArgs<
         Game.Model.Base.IDiscoverableArtifact
-    >> OnGameToken
+    >> OnGameToken,
+
+    System.EventHandler<Game.Model.Events.WorldEventArgs<
+        (bool IsHeroDead, Game.Model.GameEntity.IHero Hero)
+    >> OnFightStop
 );

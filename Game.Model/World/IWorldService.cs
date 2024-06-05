@@ -4,7 +4,6 @@ using Game.Model.Weapon;
 using Game.Constant;
 using Game.Model.Events;
 using Game.Model.Base;
-using Game.Model.GameToken;
 
 namespace Game.Model.World;
 
@@ -14,14 +13,15 @@ public interface IWorldService
 
     public IWorld CurrentWorld { get; }
 
-    // TODO! World service should contain a stack of worlds. 
-    // public Stack<IWorld> Worlds { get; set; }
-
     public IEnemy? FightingEnemy { get; }
 
     public event EventHandler<WorldEventArgs<IHero>>? GameOverEvent;
 
-    public event EventHandler<WorldEventArgs<IEnemy>>? FightEvent;
+    public event EventHandler<WorldEventArgs<IEnemy>>? FightStartEvent;
+
+    public event EventHandler<WorldEventArgs<(
+        bool IsHeroDead, IHero Hero
+    )>>? FightStopEvent;
 
     public event EventHandler<WorldEventArgs<IDiscoverableArtifact>>? PickTokenEvent;
 
@@ -41,11 +41,11 @@ public interface IWorldService
     /// </exception>
     public void MovePlayerToNextPosition(Move move);
 
-    public void RemoveEnemyFromWorld(IEnemy enemy);
+    public void RemoveDeadEnemyFromWorld(IEnemy enemy);
 
     public string GetTerrainDescription();
 
-    public void UpdateEntityHealth(ICreature entity, IWeapon weapon);
+    public void UpdateCreatureHealth(ICreature entity, IWeapon weapon);
 
     public bool IsFightOver(IHero player, IEnemy enemy);
 

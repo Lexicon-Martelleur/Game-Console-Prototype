@@ -24,7 +24,10 @@ internal interface IWorldView
 
     internal string GetIsGoalText(IGameEntity flag);
 
-    internal void WriteFightInfo(IWorldService worldService, IEnemy enemy, bool waitForUserInput);
+    internal void WriteFightInfo(
+        IWorldService worldService, 
+        IEnemy enemy,
+        bool waitForUserInput);
     
     internal string GetPickedUpTokenText(IDiscoverableArtifact item);
 

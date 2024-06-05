@@ -17,16 +17,11 @@ internal class FightController(IFightView view, IWorldService worldService)
             string playerWeaponString = view.ReadWeapon(player);
             foreach (var weapon in player.Weapons)
             {
-                worldService.UpdateEntityHealth(enemy, weapon);
+                worldService.UpdateCreatureHealth(enemy, weapon);
             }
-            worldService.UpdateEntityHealth(player, enemy.Weapon);
+            worldService.UpdateCreatureHealth(player, enemy.Weapon);
             
         } while (!worldService.IsFightOver(player, enemy));
-        
-        if (!worldService.IsHeroDead())
-        {
-            worldService.RemoveEnemyFromWorld(enemy);
-        }
     }
 
     private uint HitOpponent(IWeapon weapon)

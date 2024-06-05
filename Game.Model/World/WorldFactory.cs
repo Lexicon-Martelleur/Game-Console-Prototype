@@ -1,8 +1,6 @@
 ﻿using Game.Model.Base;
-using Game.Model.Constant;
 using Game.Model.GameEntity;
 using Game.Model.GameToken;
-using System.Runtime.Serialization;
 
 namespace Game.Model.World;
 
@@ -20,7 +18,7 @@ public class WorldFactory
 
         Stack<IWorld> worlds = [];
         worlds.Push(impossibleBridgeWorld);
-        worlds.Push(mediumBridgeWorld);
+        // worlds.Push(mediumBridgeWorld);
         worlds.Push(easyBridgeWorld);
 
         return new WorldService(
@@ -29,7 +27,7 @@ public class WorldFactory
         );
     }
 
-    internal uint CreateID()
+    private uint CreateID()
     {
         Random random = new();
         uint id;
@@ -49,6 +47,10 @@ public class WorldFactory
             gamePointsFlagBridgeWorld);
 
         IEnumerable<IDiscoverableArtifact> bridgeGameWorldItems = [
+            new Ant(CreateID(), new Position(19, 23)),
+            new Ant(CreateID(), new Position(29, 12)),
+            new Ant(CreateID(), new Position(39, 2)),
+            new Ant(CreateID(), new Position(3, 3)),
             new Ant(CreateID(), new Position(19, 23)),
             new Ant(CreateID(), new Position(29, 12)),
             new Ant(CreateID(), new Position(39, 2)),
@@ -80,6 +82,18 @@ public class WorldFactory
             new Ant(CreateID(), new Position(29, 12)),
             new Ant(CreateID(), new Position(39, 2)),
             new Ant(CreateID(), new Position(3, 3)),
+            new Ant(CreateID(), new Position(19, 23)),
+            new Ant(CreateID(), new Position(29, 12)),
+            new Ant(CreateID(), new Position(39, 2)),
+            new Ant(CreateID(), new Position(3, 3)),
+            new Ant(CreateID(), new Position(19, 23)),
+            new Ant(CreateID(), new Position(29, 12)),
+            new Ant(CreateID(), new Position(39, 2)),
+            new Ant(CreateID(), new Position(3, 3)),
+            new Ant(CreateID(), new Position(19, 23)),
+            new Ant(CreateID(), new Position(29, 12)),
+            new Ant(CreateID(), new Position(39, 2)),
+            new Ant(CreateID(), new Position(3, 3)),
             new Heart(new Position(5, 5)),
             new Heart(new Position(6, 6)),
             new Heart(new Position(7, 7))
@@ -100,6 +114,26 @@ public class WorldFactory
             gamePointsFlagBridgeWorld);
 
         IEnumerable<IDiscoverableArtifact> bridgeGameWorldItems = [
+            new Ant(CreateID(), new Position(19, 23)),
+            new Ant(CreateID(), new Position(29, 12)),
+            new Ant(CreateID(), new Position(39, 2)),
+            new Ant(CreateID(), new Position(3, 3)),
+            new Ant(CreateID(), new Position(19, 23)),
+            new Ant(CreateID(), new Position(29, 12)),
+            new Ant(CreateID(), new Position(39, 2)),
+            new Ant(CreateID(), new Position(3, 3)),
+            new Ant(CreateID(), new Position(19, 23)),
+            new Ant(CreateID(), new Position(29, 12)),
+            new Ant(CreateID(), new Position(39, 2)),
+            new Ant(CreateID(), new Position(3, 3)),
+            new Ant(CreateID(), new Position(19, 23)),
+            new Ant(CreateID(), new Position(29, 12)),
+            new Ant(CreateID(), new Position(39, 2)),
+            new Ant(CreateID(), new Position(3, 3)),
+            new Ant(CreateID(), new Position(19, 23)),
+            new Ant(CreateID(), new Position(29, 12)),
+            new Ant(CreateID(), new Position(39, 2)),
+            new Ant(CreateID(), new Position(3, 3)),
             new Ant(CreateID(), new Position(19, 23)),
             new Ant(CreateID(), new Position(29, 12)),
             new Ant(CreateID(), new Position(39, 2)),

@@ -39,13 +39,18 @@ internal class WorldController(
             }
             DrawWorldWithLock(worldService.GetWorldSnapShot(), _additionalMessage);
             HandleMoveCommand(worldView.GetCommand());
-        } while (!_gameOver/* && !_goal*/);
+        } while (!_gameOver);
     }
 
     private WorldEvents GetWorldEvents()
     {
         return (
-            OnWorldTime, OnGoal, OnGameOver, OnFight, OnGameToken
+            OnWorldTime,
+            OnGoal,
+            OnGameOver,
+            OnFightStart,
+            OnGameToken,
+            OnFightStop
         );
     }
 
@@ -63,10 +68,24 @@ internal class WorldController(
         DrawWorldWithLock(worldService.GetWorldSnapShot(), gameOverMsg);
     }
 
-    private void OnFight(Object? source, WorldEventArgs<IEnemy> e)
+    private void OnFightStart(Object? source, WorldEventArgs<IEnemy> e)
     {
         bool waitForUserInput = true;
         SetupFightInfoState(e.Data, waitForUserInput);
+    }
+
+    // (bool IsHeroDead, Game.Model.GameEntity.IHero Hero)
+    private void OnFightStop(
+        Object? source,
+        WorldEventArgs<(bool IsHeroDead, Game.Model.GameEntity.IHero Hero)> e)
+    {
+        worldView.ClearScreen();
+        if (e.Data.IsHeroDead)
+        {
+            worldService.CloseWorld();
+            _gameOver = true;
+            _additionalMessage = worldView.GetGameOverText(worldService.Hero);
+        }
     }
 
     private void OnGameToken(Object? source, WorldEventArgs<IDiscoverableArtifact> e)
@@ -119,17 +138,8 @@ internal class WorldController(
     private void FightExistingEnemy(IEnemy enemy)
     {
         fightController.StartFight(worldService.Hero, enemy);
-        if (!worldService.IsHeroDead())
-        {
-            worldService.InitWorld(GetWorldEvents());
-            worldView.ClearScreen();
-        }
-        else
-        {
-            _gameOver = true;
-            var gameOverMsg = worldView.GetGameOverText(worldService.Hero);
-            DrawWorldWithLock(worldService.GetWorldSnapShot(), gameOverMsg);
-        }
+        worldService.InitWorld(GetWorldEvents());
+        worldService.RemoveDeadEnemyFromWorld(enemy);
     }
 
     private void HandleMoveCommand(Move move)
