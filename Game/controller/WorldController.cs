@@ -7,6 +7,7 @@ using Game.Model.World;
 using Game.view;
 using Game.Model.Events;
 using Game.Model.Base;
+using System;
 
 namespace Game.Controller;
 
@@ -70,11 +71,21 @@ internal class WorldController(
 
     private void OnFightStart(Object? source, WorldEventArgs<IEnemy> e)
     {
+        worldService.CloseWorld();
         bool waitForUserInput = true;
         SetupFightInfoState(e.Data, waitForUserInput);
     }
 
-    // (bool IsHeroDead, Game.Model.GameEntity.IHero Hero)
+    private void SetupFightInfoState(IEnemy enemy, bool waitForUserInput)
+    {
+        worldService.CloseWorld();
+        worldView.WriteFightInfo(
+                worldService,
+                enemy,
+                waitForUserInput
+        );
+    }
+
     private void OnFightStop(
         Object? source,
         WorldEventArgs<(bool IsHeroDead, Game.Model.GameEntity.IHero Hero)> e)
@@ -131,12 +142,13 @@ internal class WorldController(
         if (worldService.FightingEnemy != null)
         {
             bool waitForUserInput = false;
-            SetupFightInfoState(worldService.FightingEnemy, waitForUserInput);
+            SetupFightInfoState(e.Data, waitForUserInput);
         }
     }
 
     private void FightExistingEnemy(IEnemy enemy)
     {
+        worldService.CloseWorld();
         fightController.StartFight(worldService.Hero, enemy);
         worldService.InitWorld(GetWorldEvents());
         worldService.RemoveDeadEnemyFromWorld(enemy);
@@ -154,9 +166,8 @@ internal class WorldController(
         }
     }
 
-    private void SetupFightInfoState(IEnemy enemy, bool waitForUserInput)
-    {
-        worldService.CloseWorld();
-        worldView.WriteFightInfo(worldService, enemy, waitForUserInput);
-    }
+    //private void SetupFightInfoState(IEnemy enemy, bool waitForUserInput)
+    //{
+    //    worldView.WriteFightInfo(worldService, enemy, waitForUserInput);
+    //}
 }
