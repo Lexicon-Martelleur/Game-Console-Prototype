@@ -20,7 +20,11 @@ internal class WorldView : IWorldView
         Console.Title = ConsoleGame.NAME;
     }
 
-    public void DrawWorld(IWorldService worldService, WorldMap map, string msg)
+    public void DrawWorld(
+        IWorldService worldService,
+        WorldMap map,
+        string msg,
+        bool pause)
     {
         if (_previousDrawnMap == null)
         {
@@ -47,6 +51,10 @@ internal class WorldView : IWorldView
         Console.BackgroundColor = currBackground;
         Console.SetCursorPosition(0, map.Height);
         Console.WriteLine(GetGameInfoText(worldService, msg));
+        if (pause) 
+        {
+            Console.ReadKey();
+        }
     }
 
     private string GetCellSymbol(Cell cell)
@@ -76,7 +84,7 @@ internal class WorldView : IWorldView
         return $"""
         {GetHealthInfoText(worldService)}
         {GetPlayerPositionText(worldService.Hero)}
-        {GetGoalMessageText(worldService.GetWorldFlag())}
+        {GetGoalMessageText(worldService)}
         {msg}
         """;
     }
@@ -98,10 +106,11 @@ internal class WorldView : IWorldView
         );
     }
 
-    private string GetGoalMessageText(IFlag flag)
+    // TODO! Message for last world ???
+    private string GetGoalMessageText(IWorldService worldService)
     {
         return GetConsistentWidth(
-            $"🧭 World Task: Take the flag {flag.Symbol} at [{flag.Position.x}, {flag.Position.y}] to win",
+            $"{worldService.GetGoalMessage()}, press enter to continue to next world",
             100
         );
     }
@@ -184,6 +193,12 @@ internal class WorldView : IWorldView
             $"ℹ️ You picked up {item.Name} {item.Symbol} at position ({item.Position.x}, {item.Position.y})",
             100
         );
+    }
+
+    public void WriteGameCongratulation()
+    {
+        Console.Clear();
+        Console.WriteLine("Congratulation");
     }
 }
 

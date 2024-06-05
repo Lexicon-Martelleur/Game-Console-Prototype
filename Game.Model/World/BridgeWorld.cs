@@ -6,6 +6,7 @@ using Game.Model.Terrain;
 
 namespace Game.Model.World;
 
+// TODO! Create an abstract base class.
 public class BridgeWorld : IWorld
 {
     private WorldMap? _worldMap;
@@ -14,6 +15,8 @@ public class BridgeWorld : IWorld
     
     private readonly int _height = WorldConstant.HEIGHT;
 
+    private string _name;
+
     private readonly IFlag _flag;
 
     private IEnumerable<IDiscoverableArtifact> _worldItems;
@@ -21,16 +24,22 @@ public class BridgeWorld : IWorld
     public IFlag Flag { get => _flag; }
 
     public BridgeWorld(
+        string name,
         IFlag flag,
         IEnumerable<IDiscoverableArtifact> worldItems)
     {
+        _name = name;
         _flag = flag;
-        _worldItems = worldItems;
+        _worldItems = worldItems.Append(Flag);
     }
+
+    public string Symbol => "🧭";
+
+    public string Name => _name;
 
     public IEnumerable<IDiscoverableArtifact> WorldItems
     {
-        get => _worldItems.Append(_flag); // Append(hero)
+        get => _worldItems;
         set => _worldItems = value;
     }
 

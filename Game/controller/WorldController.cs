@@ -17,8 +17,6 @@ internal class WorldController(
 {
     private bool _gameOver = false;
 
-    private bool _goal = false;
-
     private string _additionalMessage = "";
 
     private readonly object _drawMapLock = new object();
@@ -41,7 +39,7 @@ internal class WorldController(
             }
             DrawWorldWithLock(worldService.GetWorldSnapShot(), _additionalMessage);
             HandleMoveCommand(worldView.GetCommand());
-        } while (!_gameOver && !_goal);
+        } while (!_gameOver/* && !_goal*/);
     }
 
     private WorldEvents GetWorldEvents()
@@ -51,11 +49,11 @@ internal class WorldController(
         );
     }
 
+    // TODO Re-factor to send previous conquered world in event args.
     private void OnGoal(Object? source, WorldEventArgs<IGameEntity> e)
     {
-        _goal = true;
         var isGoalMsg = worldView.GetIsGoalText(e.Data);
-        DrawWorldWithLock(worldService.GetWorldSnapShot(), isGoalMsg);
+        DrawWorldWithLock(worldService.GetWorldSnapShot(), isGoalMsg, true);
     }
 
     private void OnGameOver(Object? source, WorldEventArgs<IHero> e)
@@ -94,11 +92,18 @@ internal class WorldController(
         }
     }
 
-    private void DrawWorldWithLock(WorldMap map, string msg)
+    private void DrawWorldWithLock(WorldMap? map, string msg, bool pause = false)
     {
         lock (_drawMapLock)
         {
-            worldView.DrawWorld(worldService, map, msg);
+            if (map == null)
+            {
+                _gameOver = true;
+                worldView.WriteGameCongratulation();
+            } else
+            {
+                worldView.DrawWorld(worldService, map, msg, pause);
+            }
         }
     }
 

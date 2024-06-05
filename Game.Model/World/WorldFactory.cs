@@ -2,47 +2,116 @@
 using Game.Model.Constant;
 using Game.Model.GameEntity;
 using Game.Model.GameToken;
+using System.Runtime.Serialization;
 
-namespace Game.Model.World
+namespace Game.Model.World;
+
+public class WorldFactory
 {
-    public class WorldFactory
+    private HashSet<uint> _gameEntityIds = [];
+    
+    public WorldService CreateWorldService()
     {
-        public WorldService CreateWorldService()
+        var heroEntity = new Hero(CreateID(), new Position(0, 0));
+        
+        var easyBridgeWorld = GetEasyBridgeWorld();
+        var mediumBridgeWorld = GetMediumBridgeWorld();
+        var impossibleBridgeWorld = GetImpossibleBridgeWorld();
+
+        Stack<IWorld> worlds = [];
+        worlds.Push(impossibleBridgeWorld);
+        worlds.Push(mediumBridgeWorld);
+        worlds.Push(easyBridgeWorld);
+
+        return new WorldService(
+            heroEntity,
+            worlds
+        );
+    }
+
+    internal uint CreateID()
+    {
+        Random random = new();
+        uint id;
+        do
         {
-            // TODO World 2
+            id = (uint)random.Next(1, int.MaxValue);
+        } while (!_gameEntityIds.Add(id));
+        return id;
+    }
 
-            // TODO world 3
-            var heroEntity = new Hero(1, new Position(0, 0));
-            
-            uint gamePointsFlagBridgeWorld = 100;
-            var flagBridgeGameWorld = new Flag(2, new Position(48, 28), gamePointsFlagBridgeWorld);
-            
-            var antOneBridgeGameWorld = new Ant(3, new Position(19, 23));
-            var antTwoBridgeGameWorld = new Ant(4, new Position(29, 12));
-            var antThreeBridgeGameWorld = new Ant(5, new Position(39, 2));
-            var antFourBridgeGameWorld = new Ant(6, new Position(3, 3));
-            var heartOne = new Heart(new Position(5, 5));
-            var heartTwo = new Heart(new Position(6, 6));
-            var heartThree = new Heart(new Position(7, 7));
+    private IWorld GetEasyBridgeWorld()
+    {
+        uint gamePointsFlagBridgeWorld = 100;
+        var flagBridgeGameWorld = new Flag(
+            CreateID(),
+            new Position(48, 28),
+            gamePointsFlagBridgeWorld);
 
-            IEnumerable<IDiscoverableArtifact> bridgeGameWorldItems = [
-                antOneBridgeGameWorld,
-                antTwoBridgeGameWorld,
-                antThreeBridgeGameWorld,
-                antFourBridgeGameWorld,
-                heartOne,
-                heartTwo,
-                heartThree
-            ];
+        IEnumerable<IDiscoverableArtifact> bridgeGameWorldItems = [
+            new Ant(CreateID(), new Position(19, 23)),
+            new Ant(CreateID(), new Position(29, 12)),
+            new Ant(CreateID(), new Position(39, 2)),
+            new Ant(CreateID(), new Position(3, 3)),
+            new Heart(new Position(5, 5)),
+            new Heart(new Position(6, 6)),
+            new Heart(new Position(7, 7)),
+            new Heart(new Position(8, 8)),
+            new Heart(new Position(9, 9)),
+            new Heart(new Position(9, 10))
+        ];
 
-            var bridgeWorldBuilder = new BridgeWorld(
-                flagBridgeGameWorld,
-                bridgeGameWorldItems);
+        return new BridgeWorld(
+            "Easy Bridge World",
+            flagBridgeGameWorld,
+            bridgeGameWorldItems);
+    }
 
-            return new WorldService(
-                heroEntity,
-                bridgeWorldBuilder
-            );
-        }
+    private IWorld GetMediumBridgeWorld()
+    {
+        uint gamePointsFlagBridgeWorld = 100;
+        var flagBridgeGameWorld = new Flag(
+            CreateID(),
+            new Position(48, 28),
+            gamePointsFlagBridgeWorld);
+
+        IEnumerable<IDiscoverableArtifact> bridgeGameWorldItems = [
+            new Ant(CreateID(), new Position(19, 23)),
+            new Ant(CreateID(), new Position(29, 12)),
+            new Ant(CreateID(), new Position(39, 2)),
+            new Ant(CreateID(), new Position(3, 3)),
+            new Heart(new Position(5, 5)),
+            new Heart(new Position(6, 6)),
+            new Heart(new Position(7, 7))
+        ];
+
+        return new BridgeWorld(
+            "Medium Bridge World",
+            flagBridgeGameWorld,
+            bridgeGameWorldItems);
+    }
+
+    private IWorld GetImpossibleBridgeWorld()
+    {
+        uint gamePointsFlagBridgeWorld = 100;
+        var flagBridgeGameWorld = new Flag(
+            CreateID(),
+            new Position(48, 28),
+            gamePointsFlagBridgeWorld);
+
+        IEnumerable<IDiscoverableArtifact> bridgeGameWorldItems = [
+            new Ant(CreateID(), new Position(19, 23)),
+            new Ant(CreateID(), new Position(29, 12)),
+            new Ant(CreateID(), new Position(39, 2)),
+            new Ant(CreateID(), new Position(3, 3)),
+            new Heart(new Position(5, 5)),
+            new Heart(new Position(6, 6)),
+            new Heart(new Position(7, 7))
+        ];
+
+        return new BridgeWorld(
+            "Impossible Bridge World",
+            flagBridgeGameWorld,
+            bridgeGameWorldItems);
     }
 }

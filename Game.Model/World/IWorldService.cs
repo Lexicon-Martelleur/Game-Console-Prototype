@@ -12,6 +12,11 @@ public interface IWorldService
 {
     public IHero Hero { get; }
 
+    public IWorld CurrentWorld { get; }
+
+    // TODO! World service should contain a stack of worlds. 
+    // public Stack<IWorld> Worlds { get; set; }
+
     public IEnemy? FightingEnemy { get; }
 
     public event EventHandler<WorldEventArgs<IHero>>? GameOverEvent;
@@ -20,11 +25,11 @@ public interface IWorldService
 
     public event EventHandler<WorldEventArgs<IDiscoverableArtifact>>? PickTokenEvent;
 
-    public WorldMap GetWorldSnapShot();
+    public WorldMap? GetWorldSnapShot();
 
     public void InitWorld(WorldEvents worldEvents);
 
-    public IFlag GetWorldFlag();
+    public string GetGoalMessage();
 
     /// <summary>
     /// Used to move player a new position.

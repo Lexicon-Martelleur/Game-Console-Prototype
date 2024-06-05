@@ -5,7 +5,7 @@ using Game.Model.Terrain;
 
 namespace Game.Model.World;
 
-public interface IWorld
+public interface IWorld : IGameArtifact
 {
     public IFlag Flag { get; }
     public IEnumerable<IDiscoverableArtifact> WorldItems { get; set; }
