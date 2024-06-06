@@ -24,6 +24,7 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
     private WorldEvents _worldEvents = (
         OnWorldTime: (source, e) => { },
         OnGoal: (source, e) => { },
+        OnNewWorld: (source, e) => { },
         OnGameOver: (source, e) => { },
         OnFightStart: (source, e) => { },
         OnGameToken: (source, e) => { },
@@ -33,6 +34,7 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
     private WorldEvents _worldEventsWrapper = (
         OnWorldTime: (source, e) => { },
         OnGoal: (source, e) => { },
+        OnNewWorld: (source, e) => { },
         OnGameOver: (source, e) => { },
         OnFightStart: (source, e) => { },
         OnGameToken: (source, e) => { },
@@ -132,9 +134,18 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         else
         {
             _worldEvents.OnGoal(source, e);
-            Hero.UpdatePosition(new Position(1, 1)); // TODO Move to world type; 
-            var prewWorld = worlds.Pop(); // TODO Send prevWorld as event args after re-factoring.
+            var prewWorld = worlds.Pop();
+            Hero.UpdatePosition(new Position(1, 1)); // TODO Move to world type;
+            OnNewWorld(prewWorld);
         }
+    }
+
+    private void OnNewWorld(IWorld prevWorld)
+    {
+        var e = new WorldEventArgs<(
+            IWorld PrevWorld, IWorld NewWorld)
+        >((PrevWorld: prevWorld, NewWorld: CurrentWorld));
+        _worldEvents.OnNewWorld(this, e);
     }
 
     private void OnGameOverWrapper(Object? source, WorldEventArgs<IHero> e)
@@ -319,7 +330,7 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         FightStartEvent?.Invoke(this, e);
     }
 
-    public void RemoveDeadEnemyFromWorld(IEnemy enemy)
+    public void RemoveDeadCreatures(IEnemy enemy)
     {
         if (!IsHeroDead()) 
         {
@@ -330,6 +341,11 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
             FightingEnemy = null;
         }
         OnFightStop();
+    }
+
+    private bool IsHeroDead()
+    {
+        return Hero.Health == 0;
     }
 
     private bool ArtifactIsNotEnenmy(IDiscoverableArtifact item, IEnemy enemy)
@@ -370,11 +386,6 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
     public bool IsFightOver(IHero player, IEnemy enemy)
     {
         return player.Health == 0 || enemy.Health == 0;
-    }
-
-    public bool IsHeroDead()
-    {
-        return Hero.Health == 0;
     }
 
     private void OnFightStop()

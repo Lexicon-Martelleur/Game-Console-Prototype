@@ -32,4 +32,6 @@ internal interface IWorldView
     internal string GetPickedUpTokenText(IDiscoverableArtifact item);
 
     internal void WriteGameCongratulation();
+
+    string GetNewWorldText(IWorld prevWorld, IWorld newWorld);
 }

@@ -18,7 +18,7 @@ public class WorldFactory
 
         Stack<IWorld> worlds = [];
         worlds.Push(impossibleBridgeWorld);
-        // worlds.Push(mediumBridgeWorld);
+        worlds.Push(mediumBridgeWorld);
         worlds.Push(easyBridgeWorld);
 
         return new WorldService(

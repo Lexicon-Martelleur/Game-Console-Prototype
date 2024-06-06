@@ -41,15 +41,13 @@ public interface IWorldService
     /// </exception>
     public void MovePlayerToNextPosition(Move move);
 
-    public void RemoveDeadEnemyFromWorld(IEnemy enemy);
+    public void RemoveDeadCreatures(IEnemy enemy);
 
     public string GetTerrainDescription();
 
     public void UpdateCreatureHealth(ICreature entity, IWeapon weapon);
 
     public bool IsFightOver(IHero player, IEnemy enemy);
-
-    public bool IsHeroDead();
 
     public void CloseWorld();
 }

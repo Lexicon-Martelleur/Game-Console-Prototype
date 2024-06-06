@@ -199,7 +199,15 @@ internal class WorldView : IWorldView
 
     public void WriteGameCongratulation()
     {
-        Console.Clear();
         Console.WriteLine("🎉 Congratulation you finished the game 🎉");
+        Console.In.WaitForEnter();
+    }
+
+    public string GetNewWorldText(IWorld prevWorld, IWorld newWorld)
+    {
+        return GetConsistentWidth(
+            $"ℹ️ World {prevWorld.Name} {prevWorld.Symbol} is conquered, new world {newWorld.Name} {newWorld.Symbol} is your new challenge)",
+            100
+        );
     }
 }

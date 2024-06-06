@@ -4,7 +4,11 @@
     System.EventHandler<Game.Model.Events.WorldEventArgs<
         Game.Model.GameEntity.IGameEntity
     >> OnGoal,
-    
+
+    System.EventHandler<Game.Model.Events.WorldEventArgs<
+        (Game.Model.World.IWorld PrevWorld, Game.Model.World.IWorld NewWorld)
+    >> OnNewWorld,
+
     System.EventHandler<Game.Model.Events.WorldEventArgs<
         Game.Model.GameEntity.IHero
     >> OnGameOver,
