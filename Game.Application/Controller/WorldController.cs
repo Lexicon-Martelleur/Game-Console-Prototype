@@ -13,7 +13,7 @@ internal class WorldController(
     SynchronizationContext syncronizationContext,
     IWorldView worldView,
     IWorldService worldService,
-    FightController fightController) : IWorldController
+    IFightController fightController) : IWorldController
 {
     private bool _gameOver = false;
 

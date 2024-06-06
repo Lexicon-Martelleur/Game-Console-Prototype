@@ -5,14 +5,10 @@ namespace Game.Controller;
 internal class GameController(
     SynchronizationContext syncronizationContext,
     IWorldController worldController
-)
+) : IGameController
 {
-    // Used to capture the synchronization context of the main thread.
-    //private SynchronizationContext _syncronizationContext =
-    //    SynchronizationContext.Current ??
-    //    new SynchronizationContext();
 
-    internal void Start()
+    public void Start()
     {
         SynchronizationContext.SetSynchronizationContext(syncronizationContext);
         Console.Clear();

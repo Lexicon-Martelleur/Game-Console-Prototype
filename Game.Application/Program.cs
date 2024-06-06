@@ -1,42 +1,29 @@
-﻿using Game.Controller;
-using Game.Infrastructure;
-using Game.Model.Constant;
+﻿// TODO Rename namespace Game.* to Game.Application.*
+using Game.Application.Controller;
+using Game.Controller;
 using Game.Model.Repository;
 using Game.Model.World;
-using Game.view;
 
-var worldView = new WorldView();
-
-var factory = new WorldFactory();
-var world = factory.CreateWorldService();
-
-var fightView = new FightView(
-    WorldConstant.WIDTH,
-    WorldConstant.HEIGHT);
-var fightController = new FightController(fightView, world);
-
-var syncronizationContext =
+var synchronizationContext =
     SynchronizationContext.Current ??
     new SynchronizationContext();
 
-IWorldController worldController = new WorldController(
-    syncronizationContext,
-    worldView,
-    world,
-    fightController);
+IRepositoryFactory repositoryFactory = new RepositoryFactory();
 
+IWorldFactory worldFactory = new WorldFactory();
 
-IFileLogger worldFileLogger = new FileLogger("log.world.txt", "resources");
-IWorldLogger worldLogger = new WorldLogger(worldFileLogger);
+var controllerFactory = new ControllerFactory(
+    synchronizationContext,
+    repositoryFactory,
+    worldFactory);
 
-IWorldController worldControllerProxy = new WorldControllerLogProxy(
-    worldController,
-    worldLogger
-);
+var fightController = controllerFactory.CreateFightController();
 
-var gameController = new GameController(syncronizationContext, worldControllerProxy);
+var worldController = controllerFactory.CreateWorldController(fightController);
+
+var gameController = controllerFactory.CreateGameController(worldController);
 
 gameController.Start();
 
 // TODO! Implement disposable.
-(worldControllerProxy as WorldControllerLogProxy)?.Dispose();
+(worldController as WorldControllerLogProxy)?.Dispose();

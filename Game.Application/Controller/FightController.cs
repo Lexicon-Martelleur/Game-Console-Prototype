@@ -6,9 +6,9 @@ using Game.view;
 
 namespace Game.Controller;
 
-internal class FightController(IFightView view, IWorldService worldService)
+internal class FightController(IFightView view, IWorldService worldService) : IFightController
 {
-    internal void StartFight(IHero player, IEnemy enemy)
+    public void StartFight(IHero player, IEnemy enemy)
     {
         view.ClearScreen();
         do
@@ -20,7 +20,7 @@ internal class FightController(IFightView view, IWorldService worldService)
                 worldService.UpdateCreatureHealth(enemy, weapon);
             }
             worldService.UpdateCreatureHealth(player, enemy.Weapon);
-            
+
         } while (!worldService.IsFightOver(player, enemy));
     }
 

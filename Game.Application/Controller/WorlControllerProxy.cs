@@ -133,10 +133,6 @@ public class WorldControllerLogProxy : IWorldController
     {
         foreach (var logEntry in _logQueue.GetConsumingEnumerable())
         {
-            //using StreamWriter writer = new(
-            //    logPath,
-            //    true);
-            //writer.WriteLine(logEntry);
             _worldLogger.Write(logEntry);
         }
     }

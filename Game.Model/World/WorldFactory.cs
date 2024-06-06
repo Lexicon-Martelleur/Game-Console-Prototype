@@ -4,14 +4,14 @@ using Game.Model.GameToken;
 
 namespace Game.Model.World;
 
-public class WorldFactory
+public class WorldFactory : IWorldFactory
 {
     private HashSet<uint> _gameEntityIds = [];
-    
+
     public WorldService CreateWorldService()
     {
         var heroEntity = new Hero(CreateID(), new Position(0, 0));
-        
+
         var easyBridgeWorld = GetEasyBridgeWorld();
         var mediumBridgeWorld = GetMediumBridgeWorld();
         var impossibleBridgeWorld = GetImpossibleBridgeWorld();
