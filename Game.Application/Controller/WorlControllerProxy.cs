@@ -10,11 +10,13 @@ using Game.Utility;
 
 namespace Game.Controller;
 
+// TODO! Add some more descriptive method to interface with args, e.g., move command
+// Log must show clearly if it is a User event ,e.g., keyboard or a model events .e.g, new world 
 public class WorldControllerLogProxy : IWorldController
 {
     private readonly IWorldLogger _worldLogger;
     
-    private readonly IWorldController _gameController;
+    private readonly IWorldController _worldController;
 
     private readonly BlockingCollection<string> _logQueue = new();
 
@@ -25,14 +27,14 @@ public class WorldControllerLogProxy : IWorldController
     private readonly string logPath;
 
     internal WorldControllerLogProxy(
-        IWorldController gameController,
+        IWorldController worldController,
         IWorldLogger worldLogger
     )
     {
         try
         {
             _worldLogger = worldLogger;
-            _gameController = gameController;
+            _worldController = worldController;
             logPath = logFile.CreateFileWithTimeStampIfNotExist(logDir);
             Task.Factory.StartNew(ProcessLogQueue, TaskCreationOptions.LongRunning);
         }
@@ -47,86 +49,86 @@ public class WorldControllerLogProxy : IWorldController
     public void DrawWorld(bool pause)
     {
         _logQueue.Add($"[{DateTime.Now}]: ${nameof(DrawWorld)} is called");
-        _gameController.DrawWorld();
+        _worldController.DrawWorld();
     }
 
     public void FightExistingEnemy(IEnemy? enemy, Action<IHero, IEnemy> startFight)
     {
         _logQueue.Add($"[{DateTime.Now}]: ${nameof(FightExistingEnemy)} is called with {enemy}");
-        _gameController.FightExistingEnemy(enemy, startFight);
+        _worldController.FightExistingEnemy(enemy, startFight);
     }
 
     public void HandleMoveCommand()
     {
         _logQueue.Add($"[{DateTime.Now}]: ${nameof(HandleMoveCommand)} is called");
-        _gameController.HandleMoveCommand();
+        _worldController.HandleMoveCommand();
     }
 
     public void OnFightStart(object? source, WorldEventArgs<IEnemy> e)
     {
         _logQueue.Add($"[{DateTime.Now}]: ${nameof(OnFightStart)} is called with {e.Data}");
-        _gameController.OnFightStart(source, e);
+        _worldController.OnFightStart(source, e);
     }
 
     public void OnFightStop(object? source, WorldEventArgs<(bool IsHeroDead, IHero Hero)> e)
     {
         _logQueue.Add($"[{DateTime.Now}]: ${nameof(OnFightStop)} is called with {e.Data}");
-        _gameController.OnFightStop(source, e);
+        _worldController.OnFightStop(source, e);
     }
 
     public void OnGameOver(object? source, WorldEventArgs<IHero> e)
     {
         _logQueue.Add($"[{DateTime.Now}]: ${nameof(OnGameOver)} is called with {e.Data}");
-        _gameController.OnGameOver(source, e);
+        _worldController.OnGameOver(source, e);
     }
 
     public void OnGameToken(object? source, WorldEventArgs<IDiscoverableArtifact> e)
     {
         _logQueue.Add($"[{DateTime.Now}]: ${nameof(OnGameToken)} is called with {e.Data}");
-        _gameController.OnGameToken(source, e);
+        _worldController.OnGameToken(source, e);
     }
 
     public void OnGoal(object? source, WorldEventArgs<IGameEntity> e)
     {
         _logQueue.Add($"[{DateTime.Now}]: ${nameof(OnGoal)} is called with {e.Data}");
-        _gameController.OnGoal(source, e);
+        _worldController.OnGoal(source, e);
     }
 
     public void OnWorldTime(object? source, ElapsedEventArgs e)
     {
         _logQueue.Add($"[{DateTime.Now}]: ${nameof(OnWorldTime)} is called");
-        _gameController.OnWorldTime(source, e);
+        _worldController.OnWorldTime(source, e);
     }
 
     public bool IsGameOver()
     {
         _logQueue.Add($"[{DateTime.Now}]: ${nameof(IsGameOver)} is called");
-        return _gameController.IsGameOver();
+        return _worldController.IsGameOver();
     }
 
     public void InitWorld()
     {
         _logQueue.Add($"[{DateTime.Now}]: ${nameof(InitWorld)} is called");
-        _gameController.InitWorld();
+        _worldController.InitWorld();
     }
 
     public bool IsFightingEnemy(out IEnemy? enemy)
     {        
-        enemy = _gameController.GetFightingEnemy();
+        enemy = _worldController.GetFightingEnemy();
         _logQueue.Add($"[{DateTime.Now}]: ${nameof(IsFightingEnemy)} is called");
-        return _gameController.IsFightingEnemy(out enemy);
+        return _worldController.IsFightingEnemy(out enemy);
     }
 
     public IEnemy? GetFightingEnemy()
     {
         _logQueue.Add($"[{DateTime.Now}]: ${nameof(GetFightingEnemy)} is called");
-        return _gameController.GetFightingEnemy();
+        return _worldController.GetFightingEnemy();
     }
 
     public void SetupFightInfoState(IEnemy enemy, bool waitForUserInput)
     {
         _logQueue.Add($"[{DateTime.Now}]: ${nameof(SetupFightInfoState)} is called with {enemy}");
-        _gameController.SetupFightInfoState(enemy, waitForUserInput);
+        _worldController.SetupFightInfoState(enemy, waitForUserInput);
     }
 
     private void ProcessLogQueue()

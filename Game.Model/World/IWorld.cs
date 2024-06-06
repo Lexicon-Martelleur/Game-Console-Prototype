@@ -7,6 +7,7 @@ namespace Game.Model.World;
 
 public interface IWorld : IGameArtifact
 {
+    WorldMap? Map { get; }
     public IFlag Flag { get; }
     public IEnumerable<IDiscoverableArtifact> WorldItems { get; set; }
     WorldMap CreateWorldSnapShot(IHero hero);

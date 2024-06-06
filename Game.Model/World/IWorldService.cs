@@ -25,21 +25,15 @@ public interface IWorldService
 
     public event EventHandler<WorldEventArgs<IDiscoverableArtifact>>? PickTokenEvent;
 
+    public event EventHandler<WorldEventArgs<Position>>? InvalidMoveEvent;
+
     public WorldMap? GetWorldSnapShot();
 
     public void InitWorld(WorldEvents worldEvents);
 
     public string GetGoalMessage();
 
-    /// <summary>
-    /// Used to move player a new position.
-    /// </summary>
-    /// <param name="move">Used to determine the move</param>
-    /// <exception cref="InvalidOperationException">
-    /// Is raised if the new position is invalid, e.g., outside the map or an
-    /// <see cref="Stone"></see> terrain.
-    /// </exception>
-    public void MovePlayerToNextPosition(Move move);
+    public void MoveHeroToNextPosition(Move move);
 
     public void RemoveDeadCreatures(IEnemy enemy);
 

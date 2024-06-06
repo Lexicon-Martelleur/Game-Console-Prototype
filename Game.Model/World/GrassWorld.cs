@@ -7,7 +7,8 @@ using Game.Model.Terrain;
 namespace Game.Model.World;
 
 // TODO! Create an abstract base class.
-public class BridgeWorld : IWorld
+// TODO! Rename to grass world
+public class GrassWorld : IWorld
 {
     private WorldMap? _worldMap;
 
@@ -21,9 +22,11 @@ public class BridgeWorld : IWorld
 
     private IEnumerable<IDiscoverableArtifact> _worldItems;
 
+    public WorldMap? Map { get => _worldMap; }
+
     public IFlag Flag { get => _flag; }
 
-    public BridgeWorld(
+    public GrassWorld(
         string name,
         IFlag flag,
         IEnumerable<IDiscoverableArtifact> worldItems)
@@ -33,7 +36,7 @@ public class BridgeWorld : IWorld
         _worldItems = worldItems.Append(Flag);
     }
 
-    public string Symbol => "🧭";
+    public string Symbol => "🌱";
 
     public string Name => _name;
 

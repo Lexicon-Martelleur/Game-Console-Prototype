@@ -14,12 +14,12 @@ var synchronizationContext =
 
 IRepositoryFactory repositoryFactory = new RepositoryFactory();
 
-IWorldFactory worldFactory = new WorldFactory();
+IWorldFactory grassWorldFactory = new GrassWorldFactory();
 
 var controllerFactory = new ControllerFactory(
     synchronizationContext,
     repositoryFactory,
-    worldFactory);
+    grassWorldFactory);
 
 var fightController = controllerFactory.CreateFightController();
 

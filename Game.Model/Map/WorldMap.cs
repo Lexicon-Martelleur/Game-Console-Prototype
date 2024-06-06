@@ -1,12 +1,17 @@
-﻿using Game.Model.Terrain;
+﻿using Game.Model.Base;
+using Game.Model.Terrain;
 
 namespace Game.Model.Map;
 
-public class WorldMap
+public class WorldMap : IGameArtifact
 {
     public Cell[,] Cells { get; private set; }
     public int Height { get; }
     public int Width { get; }
+
+    public string Symbol => "🧭";
+
+    public string Name => "Map";
 
     public WorldMap(
         int height,

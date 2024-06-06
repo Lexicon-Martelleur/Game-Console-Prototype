@@ -18,12 +18,11 @@ internal class GameController(
         {
             if (worldController.IsFightingEnemy(out IEnemy? enemy))
             {
-                worldController.FightExistingEnemy(
-                    enemy,
-                    fightController.StartFight);
+                var fightAction = fightController.StartFight;
+                worldController.FightExistingEnemy(enemy, fightAction);
             }
-            worldController.DrawWorld();
             worldController.HandleMoveCommand();
+            
         } while (!worldController.IsGameOver());
     }
 }

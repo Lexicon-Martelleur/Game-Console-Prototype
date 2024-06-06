@@ -106,7 +106,6 @@ internal class WorldView : IWorldView
         );
     }
 
-    // TODO! Message for last world ???
     private string GetGoalMessageText(IWorldService worldService)
     {
         return GetConsistentWidth(
@@ -136,10 +135,10 @@ internal class WorldView : IWorldView
         _previousDrawnMap = null;
     }
 
-    public string GetWarningMessageText(IHero player, string msg)
+    public string GetInvalidMoveText(IHero hero, Position invalidPos)
     {
         return GetConsistentWidth(
-            $"⚠  {msg}",
+            $"⚠ {hero.Name} {hero.Symbol} can not move to coordinates ({invalidPos.x}, {invalidPos.y})",
             100
         );
     }

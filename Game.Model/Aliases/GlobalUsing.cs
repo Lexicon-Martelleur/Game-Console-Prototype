@@ -23,5 +23,9 @@
 
     System.EventHandler<Game.Model.Events.WorldEventArgs<
         (bool IsHeroDead, Game.Model.GameEntity.IHero Hero)
-    >> OnFightStop
+    >> OnFightStop,
+
+    System.EventHandler<Game.Model.Events.WorldEventArgs<
+        Game.Model.Base.Position
+    >> OnInvalidMove
 );

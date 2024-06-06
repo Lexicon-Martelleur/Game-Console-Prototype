@@ -20,7 +20,7 @@ internal interface IWorldView
 
     internal string GetGameOverText(IHero hero);
 
-    internal string GetWarningMessageText(IHero hero, string msg);
+    internal string GetInvalidMoveText(IHero hero, Position invalidPos);
 
     internal string GetIsGoalText(IGameEntity flag);
 

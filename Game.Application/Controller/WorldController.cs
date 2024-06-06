@@ -29,7 +29,8 @@ internal class WorldController(
             OnGameOver,
             OnFightStart,
             OnGameToken,
-            OnFightStop
+            OnFightStop,
+            OnInvalidMove
         );
     }
 
@@ -53,6 +54,7 @@ internal class WorldController(
 
     public void OnGameOver(Object? source, WorldEventArgs<IHero> e)
     {
+        worldService.CloseWorld();
         _gameOver = true;
         var gameOverMsg = worldView.GetGameOverText(e.Data);
         DrawWorld();
@@ -77,7 +79,7 @@ internal class WorldController(
 
     public void OnFightStop(
         Object? source,
-        WorldEventArgs<(bool IsHeroDead, Game.Model.GameEntity.IHero Hero)> e)
+        WorldEventArgs<(bool IsHeroDead, IHero Hero)> e)
     {
         worldView.ClearScreen();
         if (e.Data.IsHeroDead)
@@ -94,6 +96,11 @@ internal class WorldController(
         _additionalMessage = pickedUpTokenMsg;
     }
 
+    public void OnInvalidMove(Object? source, WorldEventArgs<Position> e)
+    {
+        _additionalMessage = worldView.GetInvalidMoveText(worldService.Hero, e.Data);
+    }
+
     public void OnWorldTime(Object? source, Timers.ElapsedEventArgs e)
     {
         var worldEnemy = worldService.FightingEnemy;
@@ -103,11 +110,8 @@ internal class WorldController(
         }
         else
         {
-            var worldEnemyEventArgs = new WorldTimeEventArgs<IEnemy>(
-                e.SignalTime,
-                worldEnemy);
-            syncronizationContext.Post(
-                _ => HandleEnemyFightEvent(worldEnemyEventArgs),
+            syncronizationContext.Send(
+                _ => SetupFightInfoState(worldEnemy, false),
                 null);
         }
     }
@@ -138,26 +142,17 @@ internal class WorldController(
         lock (_drawMapLock)
         {
             var map = worldService.GetWorldSnapShot();
-            var msg = _additionalMessage;
             if (map == null)
             {
                 _gameOver = true;
-
                 worldView.WriteGameCongratulation();
-            }
+                worldService.CloseWorld();
+            } 
             else
             {
+                var msg = _additionalMessage;
                 worldView.DrawWorld(worldService, map, msg, pause);
             }
-        }
-    }
-
-    private void HandleEnemyFightEvent(WorldTimeEventArgs<IEnemy> e)
-    {
-        if (worldService.FightingEnemy != null)
-        {
-            bool waitForUserInput = false;
-            SetupFightInfoState(e.Data, waitForUserInput);
         }
     }
 
@@ -175,14 +170,8 @@ internal class WorldController(
 
     public void HandleMoveCommand()
     {
+        DrawWorld();
         var move = worldView.GetCommand();
-        try
-        {
-            worldService.MovePlayerToNextPosition(move);
-        }
-        catch (InvalidOperationException e)
-        {
-            _additionalMessage = worldView.GetWarningMessageText(worldService.Hero, e.Message);
-        }
+        worldService.MoveHeroToNextPosition(move);
     }
 }

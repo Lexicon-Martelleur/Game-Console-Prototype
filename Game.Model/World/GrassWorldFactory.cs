@@ -4,22 +4,20 @@ using Game.Model.GameToken;
 
 namespace Game.Model.World;
 
-public class WorldFactory : IWorldFactory
+public class GrassWorldFactory : BaseWorldFactory
 {
-    private HashSet<uint> _gameEntityIds = [];
-
-    public WorldService CreateWorldService()
+    public override WorldService CreateWorldService()
     {
         var heroEntity = new Hero(CreateID(), new Position(0, 0));
 
-        var easyBridgeWorld = GetEasyBridgeWorld();
-        var mediumBridgeWorld = GetMediumBridgeWorld();
-        var impossibleBridgeWorld = GetImpossibleBridgeWorld();
+        var easyGrassWorld = GetImpossibleGrassWorld();
+        var mediumGrassWorld = GetImpossibleGrassWorld();
+        var impossibleGrassWorld = GetImpossibleGrassWorld();
 
         Stack<IWorld> worlds = [];
-        worlds.Push(impossibleBridgeWorld);
-        worlds.Push(mediumBridgeWorld);
-        worlds.Push(easyBridgeWorld);
+        worlds.Push(impossibleGrassWorld);
+        worlds.Push(mediumGrassWorld);
+        worlds.Push(easyGrassWorld);
 
         return new WorldService(
             heroEntity,
@@ -27,18 +25,7 @@ public class WorldFactory : IWorldFactory
         );
     }
 
-    private uint CreateID()
-    {
-        Random random = new();
-        uint id;
-        do
-        {
-            id = (uint)random.Next(1, int.MaxValue);
-        } while (!_gameEntityIds.Add(id));
-        return id;
-    }
-
-    private IWorld GetEasyBridgeWorld()
+    private IWorld GetEasyGrassWorld()
     {
         uint gamePointsFlagBridgeWorld = 100;
         var flagBridgeGameWorld = new Flag(
@@ -63,13 +50,13 @@ public class WorldFactory : IWorldFactory
             new Heart(new Position(9, 10))
         ];
 
-        return new BridgeWorld(
-            "Easy Bridge World",
+        return new GrassWorld(
+            "Easy Grass World",
             flagBridgeGameWorld,
             bridgeGameWorldItems);
     }
 
-    private IWorld GetMediumBridgeWorld()
+    private IWorld GetMediumGrassWorld()
     {
         uint gamePointsFlagBridgeWorld = 100;
         var flagBridgeGameWorld = new Flag(
@@ -99,13 +86,13 @@ public class WorldFactory : IWorldFactory
             new Heart(new Position(7, 7))
         ];
 
-        return new BridgeWorld(
-            "Medium Bridge World",
+        return new GrassWorld(
+            "Medium Grass World",
             flagBridgeGameWorld,
             bridgeGameWorldItems);
     }
 
-    private IWorld GetImpossibleBridgeWorld()
+    private IWorld GetImpossibleGrassWorld()
     {
         uint gamePointsFlagBridgeWorld = 100;
         var flagBridgeGameWorld = new Flag(
@@ -143,8 +130,8 @@ public class WorldFactory : IWorldFactory
             new Heart(new Position(7, 7))
         ];
 
-        return new BridgeWorld(
-            "Impossible Bridge World",
+        return new GrassWorld(
+            "Impossible Grass World",
             flagBridgeGameWorld,
             bridgeGameWorldItems);
     }

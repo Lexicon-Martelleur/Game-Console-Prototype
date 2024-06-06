@@ -19,27 +19,13 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
 
     private IEnemy? _fightingEnemy = null;
 
+    private bool _isWorldClosed = true;
+
     private Timers.Timer _worldTimer = new Timers.Timer(1000);
 
-    private WorldEvents _worldEvents = (
-        OnWorldTime: (source, e) => { },
-        OnGoal: (source, e) => { },
-        OnNewWorld: (source, e) => { },
-        OnGameOver: (source, e) => { },
-        OnFightStart: (source, e) => { },
-        OnGameToken: (source, e) => { },
-        OnFightStop: (source, e) => { }
-    );
+    private WorldEvents _worldEvents;
 
-    private WorldEvents _worldEventsWrapper = (
-        OnWorldTime: (source, e) => { },
-        OnGoal: (source, e) => { },
-        OnNewWorld: (source, e) => { },
-        OnGameOver: (source, e) => { },
-        OnFightStart: (source, e) => { },
-        OnGameToken: (source, e) => { },
-        OnFightStop: (source, e) => { }
-    );
+    private WorldEvents _worldEventsWrapper;
 
     public IHero Hero { get => hero; }
 
@@ -62,6 +48,7 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         private set => _fightingEnemy = value;
     }
 
+    public event EventHandler<WorldEventArgs<Position>>? InvalidMoveEvent;
 
     public WorldMap? GetWorldSnapShot()
     {
@@ -95,6 +82,11 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
 
         _worldEventsWrapper.OnGameToken = OnGameTokenWrapper;
         PickTokenEvent += _worldEventsWrapper.OnGameToken;
+
+        _worldEventsWrapper.OnInvalidMove = worldEvents.OnInvalidMove;
+        InvalidMoveEvent += _worldEventsWrapper.OnInvalidMove;
+
+        _isWorldClosed = false;
     }
 
     private void OnWorldTimeWrapper(Object? source, Timers.ElapsedEventArgs e)
@@ -127,15 +119,17 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         CurrentWorld.WorldItems = CurrentWorld.WorldItems
             .Where(item => e.Data.Position != item.Position);
 
-        if (worlds.Count == 0)
+        if (worlds.Count == 1)
         {
+            _worldEvents.OnGoal(source, e);
+            var prewWorld = worlds.Pop();
             CloseWorld();
         }
         else
         {
             _worldEvents.OnGoal(source, e);
             var prewWorld = worlds.Pop();
-            Hero.UpdatePosition(new Position(1, 1)); // TODO Move to world type;
+            Hero.UpdatePosition(new Position(0, 0)); // TODO Move to WorldRef type;
             OnNewWorld(prewWorld);
         }
     }
@@ -199,25 +193,37 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
 
     public string GetGoalMessage()
     {
-        return $"{CurrentWorld.Symbol} {CurrentWorld.Name} task: Take the flag " +
-            $"{CurrentWorld.Flag.Symbol} at " +
+        return $"{CurrentWorld.Symbol} {CurrentWorld.Name}: " +
+            $"Take the flag {CurrentWorld.Flag.Symbol} at " +
+            $"map {CurrentWorld.Map?.Symbol ?? ""} coordinates "+
             $"[{CurrentWorld.Flag.Position.x}, {CurrentWorld.Flag.Position.y}] " +
             $"to win";
     }
 
-    public void MovePlayerToNextPosition(Move move)
+    public void MoveHeroToNextPosition(Move move)
     {
-        var nextPos = NextPlayerPosition(move);
-        Hero.UpdatePosition(nextPos);
-        UpdatePlayerHealth(nextPos);
-        FightingEnemy = GetFightingEnemy(); // TODO! Event?
-        IsGameOver();
-        IsFight();
-        PickupExistingHeart();
-        PickupExistingFlag();
+        if (_isWorldClosed)
+        {
+            return;
+        }
+
+        if (IsNextPlayerPosition(out Position nextPos, move))
+        {
+            Hero.UpdatePosition(nextPos);
+            UpdatePlayerHealth(nextPos);
+            CheckIsGameOver();
+            FightingEnemy = GetFightingEnemy();
+            IsFight();
+            PickupExistingHeart();
+            PickupExistingFlag();
+        }
+        else 
+        {
+            OnInvalidMove(nextPos);
+        }
     }
 
-    private Position NextPlayerPosition(Move move)
+    private bool IsNextPlayerPosition(out Position nextPos, Move move)
     {
         int nextY = Hero.Position.y;
         int nextX = Hero.Position.x;
@@ -229,27 +235,16 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
             case Move.LEFT: nextX--; break;
             default: break;
         }
-        var nextPos = new Position(nextX, nextY);
-        if (!IsValidPosition(nextPos))
-        {
-            throw new InvalidOperationException(
-                $"Player can not move to position [{nextPos.x}, {nextPos.y}]"
-            );
-        }
-        return nextPos;
+        nextPos = new Position(nextX, nextY);
+        return IsValidPosition(nextPos);
     }
 
     private bool IsValidPosition(Position position)
     {
-        if (CurrentWorld.IsStoneTerrain(position) ||
-            CurrentWorld.IsOutsideMap(position))
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+        return !(
+            CurrentWorld.IsStoneTerrain(position) ||
+            CurrentWorld.IsOutsideMap(position)
+        );
     }
 
     private void UpdatePlayerHealth(Position position)
@@ -270,14 +265,6 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         }
     }
 
-    private void PickupExistingFlag()
-    {
-        if (CurrentWorld.Flag.PickUpExistingItem(Hero, out IGameEntity entity))
-        {
-            Hero.Flags.Append(entity);
-        }   
-    }
-
     private void PickupExistingHeart()
     {
         CurrentWorld.WorldItems.ToList().ForEach(AddHealthToPlayer);
@@ -288,7 +275,7 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         if (item is IHeart)
         {
             var heart = item as IHeart;
-            if (heart != null && 
+            if (heart != null &&
                 heart.PickUpExistingItem(Hero, out IDiscoverableArtifact artifact))
             {
                 var eventArgs = new WorldEventArgs<IDiscoverableArtifact>(artifact);
@@ -297,7 +284,21 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         }
     }
 
-    private void IsGameOver()
+    private void PickupExistingFlag()
+    {
+        if (CurrentWorld.Flag.PickUpExistingItem(Hero, out IGameEntity entity))
+        {
+            Hero.Flags.Append(entity);
+        }   
+    }
+
+    private void OnInvalidMove(Position invalidPos)
+    {
+        var eventArgs = new WorldEventArgs<Position>(invalidPos);
+        InvalidMoveEvent?.Invoke(this, eventArgs);
+    }
+
+    private void CheckIsGameOver()
     {
         var isGameOver = Hero.Health == 0;
         if (isGameOver)
@@ -403,11 +404,18 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
     public void CloseWorld()
     {
         _worldTimer.Elapsed -= _worldEventsWrapper.OnWorldTime;
-        CurrentWorld.Flag.Collected -= _worldEventsWrapper.OnGoal;
         GameOverEvent -= _worldEventsWrapper.OnGameOver;
         FightStartEvent -= _worldEventsWrapper.OnFightStart;
         PickTokenEvent -= _worldEventsWrapper.OnGameToken;
         FightStopEvent -= _worldEventsWrapper.OnFightStop;
         _worldTimer.Close();
+
+        try
+        {
+            CurrentWorld.Flag.Collected -= _worldEventsWrapper.OnGoal;
+        }
+        catch { }
+
+        _isWorldClosed = true;
     }
 }
