@@ -7,7 +7,7 @@ using Game.Model.Map;
 using Game.Model.World;
 using Game.Utility;
 
-namespace Game.view;
+namespace Game.Application.View;
 
 internal class WorldView : IWorldView
 {

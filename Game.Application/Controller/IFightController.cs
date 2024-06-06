@@ -1,9 +1,8 @@
 ﻿using Game.Model.GameEntity;
 
-namespace Game.Controller
+namespace Game.Application.Controller;
+
+internal interface IFightController
 {
-    internal interface IFightController
-    {
-        void StartFight(IHero player, IEnemy enemy);
-    }
+    void StartFight(IHero player, IEnemy enemy);
 }

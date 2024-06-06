@@ -2,9 +2,7 @@
 
 // TODO! Update logging proxy.
 
-// TODO! Rename namespace Game.* to Game.Application.*
 using Game.Application.Controller;
-using Game.Controller;
 using Game.Model.Repository;
 using Game.Model.World;
 

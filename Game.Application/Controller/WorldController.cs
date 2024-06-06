@@ -2,12 +2,12 @@
 
 using Game.Model.GameEntity;
 using Game.Model.World;
-using Game.view;
+using Game.Application.View;
 using Game.Model.Events;
 using Game.Model.Base;
 
 
-namespace Game.Controller;
+namespace Game.Application.Controller;
 
 internal class WorldController(
     SynchronizationContext syncronizationContext,

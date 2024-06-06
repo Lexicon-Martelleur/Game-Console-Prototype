@@ -2,7 +2,7 @@
 using Game.Model.GameEntity;
 using System.Text;
 
-namespace Game.view;
+namespace Game.Application.View;
 
 internal class FightView(int width, int height) : IFightView
 {

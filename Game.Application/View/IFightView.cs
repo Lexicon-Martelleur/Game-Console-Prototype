@@ -1,6 +1,6 @@
 ﻿using Game.Model.GameEntity;
 
-namespace Game.view;
+namespace Game.Application.View;
 
 internal interface IFightView
 {

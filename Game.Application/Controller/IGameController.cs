@@ -1,7 +1,6 @@
-﻿namespace Game.Controller
+﻿namespace Game.Application.Controller;
+
+internal interface IGameController
 {
-    internal interface IGameController
-    {
-        void Start();
-    }
+    void Start();
 }

@@ -8,7 +8,7 @@ using Game.Model.GameEntity;
 using Game.Utility;
 
 
-namespace Game.Controller;
+namespace Game.Application.Controller;
 
 // TODO! Add some more descriptive method to interface with args, e.g., move command
 // Log must show clearly if it is a User event ,e.g., keyboard or a model events .e.g, new world 

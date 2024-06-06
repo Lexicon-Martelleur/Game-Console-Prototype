@@ -2,9 +2,9 @@
 using Game.Model.GameEntity;
 using Game.Model.Weapon;
 using Game.Model.World;
-using Game.view;
+using Game.Application.View;
 
-namespace Game.Controller;
+namespace Game.Application.Controller;
 
 internal class FightController(IFightView view, IWorldService worldService) : IFightController
 {

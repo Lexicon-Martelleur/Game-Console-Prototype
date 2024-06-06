@@ -1,6 +1,6 @@
 ﻿using Game.Model.GameEntity;
 
-namespace Game.Controller;
+namespace Game.Application.Controller;
 
 internal class GameController(
     SynchronizationContext syncronizationContext,

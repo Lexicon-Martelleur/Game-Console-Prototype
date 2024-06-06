@@ -4,7 +4,7 @@ using Game.Model.GameEntity;
 using Game.Model.Map;
 using Game.Model.World;
 
-namespace Game.view;
+namespace Game.Application.View;
 
 internal interface IWorldView
 {

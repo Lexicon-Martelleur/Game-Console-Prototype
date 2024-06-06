@@ -1,9 +1,7 @@
-﻿using Game.Controller;
-using Game.Infrastructure;
-using Game.Model.Constant;
+﻿using Game.Model.Constant;
 using Game.Model.Repository;
 using Game.Model.World;
-using Game.view;
+using Game.Application.View;
 
 namespace Game.Application.Controller;
 
