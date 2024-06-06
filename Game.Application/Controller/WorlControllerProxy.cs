@@ -1,9 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using System.Timers;
 
-using Game.Constant;
 using Game.Model.Base;
 using Game.Model.Events;
+using Game.Model.Repository;
 using Game.Model.GameEntity;
 using Game.Utility;
 
@@ -12,6 +12,8 @@ namespace Game.Controller;
 
 public class WorldControllerLogProxy : IWorldController
 {
+    private readonly IWorldLogger _worldLogger;
+    
     private readonly IWorldController _gameController;
 
     private readonly BlockingCollection<string> _logQueue = new();
@@ -23,11 +25,13 @@ public class WorldControllerLogProxy : IWorldController
     private readonly string logPath;
 
     internal WorldControllerLogProxy(
-        IWorldController gameController
+        IWorldController gameController,
+        IWorldLogger worldLogger
     )
     {
         try
         {
+            _worldLogger = worldLogger;
             _gameController = gameController;
             logPath = logFile.CreateFileWithTimeStampIfNotExist(logDir);
             Task.Factory.StartNew(ProcessLogQueue, TaskCreationOptions.LongRunning);
@@ -129,10 +133,11 @@ public class WorldControllerLogProxy : IWorldController
     {
         foreach (var logEntry in _logQueue.GetConsumingEnumerable())
         {
-            using StreamWriter writer = new(
-                logPath,
-                true);
-            writer.WriteLine(logEntry);
+            //using StreamWriter writer = new(
+            //    logPath,
+            //    true);
+            //writer.WriteLine(logEntry);
+            _worldLogger.Write(logEntry);
         }
     }
 

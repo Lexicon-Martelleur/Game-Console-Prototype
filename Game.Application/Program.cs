@@ -1,5 +1,7 @@
 ﻿using Game.Controller;
+using Game.Infrastructure;
 using Game.Model.Constant;
+using Game.Model.Repository;
 using Game.Model.World;
 using Game.view;
 
@@ -23,7 +25,14 @@ IWorldController worldController = new WorldController(
     world,
     fightController);
 
-IWorldController worldControllerProxy = new WorldControllerLogProxy(worldController);
+
+IFileLogger worldFileLogger = new FileLogger("log.world.txt", "resources");
+IWorldLogger worldLogger = new WorldLogger(worldFileLogger);
+
+IWorldController worldControllerProxy = new WorldControllerLogProxy(
+    worldController,
+    worldLogger
+);
 
 var gameController = new GameController(syncronizationContext, worldControllerProxy);
 

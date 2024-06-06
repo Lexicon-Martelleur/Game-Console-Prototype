@@ -7,8 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Game.Constant\Game.Constant.csproj" />
-    <ProjectReference Include="..\Game.Infrastructure\Game.Infrastructure.csproj" />
     <ProjectReference Include="..\Game.Utility\Game.Utility.csproj" />
   </ItemGroup>
 
