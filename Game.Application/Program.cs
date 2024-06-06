@@ -3,8 +3,12 @@
 // TODO! Update logging proxy.
 
 using Game.Application.Controller;
+using Game.Constant;
 using Game.Model.Repository;
 using Game.Model.World;
+
+Console.Title = ConsoleGame.NAME;
+Console.OutputEncoding = System.Text.Encoding.UTF8;
 
 var synchronizationContext =
     SynchronizationContext.Current ??

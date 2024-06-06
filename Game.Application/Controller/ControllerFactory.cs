@@ -24,9 +24,7 @@ internal class ControllerFactory
 
     internal IFightController CreateFightController()
     {
-        IFightView fightView = new FightView(
-            WorldConstant.WIDTH,
-            WorldConstant.HEIGHT);
+        IFightView fightView = new FightView();
         return new FightController(fightView, _worldService);
     }
 

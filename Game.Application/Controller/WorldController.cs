@@ -9,20 +9,29 @@ using Game.Model.Base;
 
 namespace Game.Application.Controller;
 
-internal class WorldController(
-    SynchronizationContext syncronizationContext,
-    IWorldView worldView,
-    IWorldService worldService) : IWorldController
+internal class WorldController : IWorldController
 {
     private bool _gameOver = false;
 
     private string _additionalMessage = "";
 
     private readonly object _drawMapLock = new object();
+    
+    private readonly SynchronizationContext _syncronizationContext;
+    
+    private readonly IWorldView _worldView;
+    
+    private readonly IWorldService _worldService;
 
-    private WorldEvents GetWorldEvents()
+    public WorldController(
+        SynchronizationContext synchronizationContext,
+        IWorldView worldView,
+        IWorldService worldService)
     {
-        return (
+        _syncronizationContext = synchronizationContext;
+        _worldView = worldView;
+        _worldService = worldService;
+        SubscribedWorldEvents = (
             OnWorldTime,
             OnGoal,
             OnNewWorld,
@@ -34,9 +43,11 @@ internal class WorldController(
         );
     }
 
+    public WorldEvents SubscribedWorldEvents { get; set; }
+
     public void OnGoal(Object? source, WorldEventArgs<IGameEntity> e)
     {
-        var isGoalMsg = worldView.GetIsGoalText(e.Data);
+        var isGoalMsg = _worldView.GetIsGoalText(e.Data);
         _additionalMessage = isGoalMsg;
         DrawWorld(true);
     }
@@ -45,33 +56,33 @@ internal class WorldController(
         Object? source,
         WorldEventArgs<(IWorld PrevWorld, IWorld NewWorld)> e)
     {
-        _additionalMessage = worldView.GetNewWorldText(
+        _additionalMessage = _worldView.GetNewWorldText(
             e.Data.PrevWorld,
             e.Data.NewWorld);
-        worldService.InitWorld(GetWorldEvents());
+        _worldService.InitWorld(SubscribedWorldEvents);
         DrawWorld();
     }
 
     public void OnGameOver(Object? source, WorldEventArgs<IHero> e)
     {
-        worldService.CloseWorld();
+        _worldService.CloseWorld();
         _gameOver = true;
-        var gameOverMsg = worldView.GetGameOverText(e.Data);
+        var gameOverMsg = _worldView.GetGameOverText(e.Data);
         DrawWorld();
     }
 
     public void OnFightStart(Object? source, WorldEventArgs<IEnemy> e)
     {
-        worldService.CloseWorld();
+        _worldService.CloseWorld();
         bool waitForUserInput = true;
         SetupFightInfoState(e.Data, waitForUserInput);
     }
 
     public void SetupFightInfoState(IEnemy enemy, bool waitForUserInput)
     {
-        worldService.CloseWorld();
-        worldView.WriteFightInfo(
-                worldService,
+        _worldService.CloseWorld();
+        _worldView.WriteFightInfo(
+                _worldService,
                 enemy,
                 waitForUserInput
         );
@@ -81,36 +92,36 @@ internal class WorldController(
         Object? source,
         WorldEventArgs<(bool IsHeroDead, IHero Hero)> e)
     {
-        worldView.ClearScreen();
+        _worldView.ClearScreen();
         if (e.Data.IsHeroDead)
         {
-            worldService.CloseWorld();
+            _worldService.CloseWorld();
             _gameOver = true;
-            _additionalMessage = worldView.GetGameOverText(worldService.Hero);
+            _additionalMessage = _worldView.GetGameOverText(_worldService.Hero);
         }
     }
 
     public void OnGameToken(Object? source, WorldEventArgs<IDiscoverableArtifact> e)
     {
-        var pickedUpTokenMsg = worldView.GetPickedUpTokenText(e.Data);
+        var pickedUpTokenMsg = _worldView.GetPickedUpTokenText(e.Data);
         _additionalMessage = pickedUpTokenMsg;
     }
 
     public void OnInvalidMove(Object? source, WorldEventArgs<Position> e)
     {
-        _additionalMessage = worldView.GetInvalidMoveText(worldService.Hero, e.Data);
+        _additionalMessage = _worldView.GetInvalidMoveText(_worldService.Hero, e.Data);
     }
 
     public void OnWorldTime(Object? source, Timers.ElapsedEventArgs e)
     {
-        var worldEnemy = worldService.FightingEnemy;
+        var worldEnemy = _worldService.FightingEnemy;
         if (worldEnemy == null)
         {
             DrawWorld();
         }
         else
         {
-            syncronizationContext.Send(
+            _syncronizationContext.Send(
                 _ => SetupFightInfoState(worldEnemy, false),
                 null);
         }
@@ -118,18 +129,18 @@ internal class WorldController(
 
     public void InitWorld()
     {
-        worldService.InitWorld(GetWorldEvents());
+        _worldService.InitWorld(SubscribedWorldEvents);
     }
 
     public bool IsFightingEnemy(out IEnemy? enemy)
     {
-        enemy = worldService.FightingEnemy;
+        enemy = _worldService.FightingEnemy;
         return enemy != null;
     }
 
     public IEnemy? GetFightingEnemy()
     {
-        return worldService.FightingEnemy;
+        return _worldService.FightingEnemy;
     }
 
     public bool IsGameOver()
@@ -141,17 +152,17 @@ internal class WorldController(
     {
         lock (_drawMapLock)
         {
-            var map = worldService.GetWorldSnapShot();
+            var map = _worldService.GetWorldSnapShot();
             if (map == null)
             {
                 _gameOver = true;
-                worldView.WriteGameCongratulation();
-                worldService.CloseWorld();
+                _worldView.WriteGameCongratulation();
+                _worldService.CloseWorld();
             } 
             else
             {
                 var msg = _additionalMessage;
-                worldView.DrawWorld(worldService, map, msg, pause);
+                _worldView.DrawWorld(_worldService, map, msg, pause);
             }
         }
     }
@@ -162,16 +173,16 @@ internal class WorldController(
         {
             return;
         }
-        worldService.CloseWorld();
-        startFight(worldService.Hero, enemy);
-        worldService.InitWorld(GetWorldEvents());
-        worldService.RemoveDeadCreatures(enemy);
+        _worldService.CloseWorld();
+        startFight(_worldService.Hero, enemy);
+        _worldService.InitWorld(SubscribedWorldEvents);
+        _worldService.RemoveDeadCreatures(enemy);
     }
 
     public void HandleMoveCommand()
     {
         DrawWorld();
-        var move = worldView.GetCommand();
-        worldService.MoveHeroToNextPosition(move);
+        var move = _worldView.GetCommand();
+        _worldService.MoveHeroToNextPosition(move);
     }
 }

@@ -1,14 +1,18 @@
 ﻿using Game.Constant;
+using Game.Model.Constant;
 using Game.Model.GameEntity;
+using Game.Utility;
 using System.Text;
 
 namespace Game.Application.View;
 
-internal class FightView(int width, int height) : IFightView
+internal class FightView() : IFightView
 {
     private string[,]? _previousDrawnFight;
 
-    private int _cellWidth = 3;
+    private readonly int _height = WorldConstant.HEIGHT;
+
+    private readonly int _width = WorldConstant.WIDTH;
 
     public void DrawFight(
         IHero player,
@@ -19,19 +23,19 @@ internal class FightView(int width, int height) : IFightView
 
         if (_previousDrawnFight == null)
         {
-            _previousDrawnFight = new string[height, width];
+            _previousDrawnFight = new string[_height, _width];
         }
 
-        for (int y = 0; y < height; y++)
+        for (int y = 0; y < _height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (int x = 0; x < _width; x++)
             {
                 string currentSymbol = GetConsistentWidth(
                     GetSymbol(x, y, player, enemy),
-                    _cellWidth);
+                    ViewConstant.CELL_WIDTH);
                 if (_previousDrawnFight[y, x] != currentSymbol)
                 {
-                    Console.SetCursorPosition(x * _cellWidth, y);
+                    Console.SetCursorPosition(x * ViewConstant.CELL_WIDTH, y);
                     Console.BackgroundColor = ColorSpectrum.Cliff;
                     Console.Write($"{currentSymbol}");
                     _previousDrawnFight[y, x] = currentSymbol;
@@ -40,7 +44,7 @@ internal class FightView(int width, int height) : IFightView
         }
 
         Console.BackgroundColor = currBackground;
-        Console.SetCursorPosition(0, height);
+        Console.SetCursorPosition(0, _height);
         Console.WriteLine(GetConsistentWidth(
             $"Fight: {player.Name} {player.Symbol} vs {enemy.Name} {enemy.Symbol}",
             100
@@ -57,10 +61,10 @@ internal class FightView(int width, int height) : IFightView
 
     private string GetSymbol(int x, int y, IHero player, IEnemy enemy)
     {
-        var playerYPosition = height / 2;
-        var playerXPositionfirst = (width / 4) * 1;
-        var enemyYPosition = height / 2;
-        var enenmyXPositionfirst = (width / 4) * 3;
+        var playerYPosition = _height / 2;
+        var playerXPositionfirst = (_width / 4) * 1;
+        var enemyYPosition = _height / 2;
+        var enenmyXPositionfirst = (_width / 4) * 3;
         if (x == playerXPositionfirst && y == playerYPosition)
         {
             return player.Symbol;
@@ -78,18 +82,7 @@ internal class FightView(int width, int height) : IFightView
 
     private string GetConsistentWidth(string content, int width)
     {
-        string consistentCellWidth = "   ";
-
-        if (content.Length > width)
-        {
-            consistentCellWidth = content.Substring(0, width);
-        }
-        else if (content.Length < width)
-        {
-            consistentCellWidth = content.PadRight(width);
-        }
-
-        return consistentCellWidth;
+        return content.GetConsistentWidth(width);
     }
 
     public string ReadWeapon(IHero player)

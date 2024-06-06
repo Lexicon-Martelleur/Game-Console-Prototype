@@ -5,11 +5,13 @@ using Game.Model.Base;
 using Game.Model.Events;
 using Game.Model.Repository;
 using Game.Model.GameEntity;
-using Game.Utility;
+using System.Runtime.CompilerServices;
+using Game.Model.World;
 
 
 namespace Game.Application.Controller;
 
+// TODO! Extract base class / bas functionality for logging logic and constants.
 // TODO! Add some more descriptive method to interface with args, e.g., move command
 // Log must show clearly if it is a User event ,e.g., keyboard or a model events .e.g, new world 
 public class WorldControllerLogProxy : IWorldController
@@ -20,11 +22,13 @@ public class WorldControllerLogProxy : IWorldController
 
     private readonly BlockingCollection<string> _logQueue = new();
 
-    private readonly string logFile = "log.world.txt";
+    private readonly string METHOD_CALL = "METHOD_CALL";
 
-    private readonly string logDir = "resources";
+    private readonly string MODEL_EVENT = "MODEL_EVENT";
 
-    private readonly string logPath;
+    private readonly string USER_EVENT = "USER_EVENT";
+
+    public WorldEvents SubscribedWorldEvents { get; set; }
 
     internal WorldControllerLogProxy(
         IWorldController worldController,
@@ -35,7 +39,6 @@ public class WorldControllerLogProxy : IWorldController
         {
             _worldLogger = worldLogger;
             _worldController = worldController;
-            logPath = logFile.CreateFileWithTimeStampIfNotExist(logDir);
             Task.Factory.StartNew(ProcessLogQueue, TaskCreationOptions.LongRunning);
         }
         catch (IOException ex)
@@ -46,88 +49,157 @@ public class WorldControllerLogProxy : IWorldController
         }
     }
 
+    private void WrappEvents()
+    {
+        var worldEvents = _worldController.SubscribedWorldEvents;
+        worldEvents.OnWorldTime = OnWorldTime;
+        worldEvents.OnGoal = OnGoal;
+        worldEvents.OnNewWorld = OnNewWorld;
+        worldEvents.OnGameOver = OnGameOver;
+        worldEvents.OnFightStart = OnFightStart;
+        worldEvents.OnGameToken = OnGameToken;
+        worldEvents.OnFightStop = OnFightStop;
+        worldEvents.OnInvalidMove = OnInvalidMove;
+        SubscribedWorldEvents = worldEvents;
+        _worldController.SubscribedWorldEvents = SubscribedWorldEvents;
+    }
+
+    public void InitWorld()
+    {
+        WrappEvents();
+        LogMethodCall("Initializing world");
+        _worldController.InitWorld();
+    }
+
+    private void LogUserEvent(
+        string message,
+        [CallerMemberName] string memberName = "",
+        [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0)
+    {
+        Log(USER_EVENT, message, memberName, filePath, lineNumber);
+    }
+
+    private void LogModelEvent(
+        string message,
+        [CallerMemberName] string memberName = "",
+        [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0)
+    {
+        Log(MODEL_EVENT, message, memberName, filePath, lineNumber);
+    }
+
+    private void LogMethodCall(
+        string message,
+        [CallerMemberName] string memberName = "",
+        [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0)
+    {
+        Log(METHOD_CALL, message, memberName, filePath, lineNumber);
+    }
+
+    private void Log(
+        string eventType,
+        string message,
+        string memberName = "",
+        string filePath = "",
+        int lineNumber = 0)
+    {
+        string logEntry = $"{DateTime.Now} " +
+            $"[{eventType}] " +
+            $"[{Path.GetFileName(filePath)}:{lineNumber}] " +
+            $"{memberName}: {message}";
+        _logQueue.Add(logEntry);
+    }
+
     public void DrawWorld(bool pause)
     {
-        _logQueue.Add($"[{DateTime.Now}]: ${nameof(DrawWorld)} is called");
-        _worldController.DrawWorld();
+        LogMethodCall($"Called with pause = {pause}");
+        _worldController.DrawWorld(pause);
     }
 
     public void FightExistingEnemy(IEnemy? enemy, Action<IHero, IEnemy> startFight)
     {
-        _logQueue.Add($"[{DateTime.Now}]: ${nameof(FightExistingEnemy)} is called with {enemy}");
+        LogMethodCall($"Called with enemy = {enemy}");
         _worldController.FightExistingEnemy(enemy, startFight);
     }
 
     public void HandleMoveCommand()
     {
-        _logQueue.Add($"[{DateTime.Now}]: ${nameof(HandleMoveCommand)} is called");
+        LogUserEvent("Move command issued");
         _worldController.HandleMoveCommand();
     }
 
     public void OnFightStart(object? source, WorldEventArgs<IEnemy> e)
     {
-        _logQueue.Add($"[{DateTime.Now}]: ${nameof(OnFightStart)} is called with {e.Data}");
+        LogModelEvent($"Fight started with enemy = {e.Data}");
         _worldController.OnFightStart(source, e);
+    }
+
+    public void OnInvalidMove(object? source, WorldEventArgs<Position> e)
+    {
+        LogModelEvent($"Invalid move = {e.Data}");
+        _worldController.OnInvalidMove(source, e);
+    }
+
+    public void OnNewWorld(object? source, WorldEventArgs<(IWorld PrevWorld, IWorld NewWorld)> e)
+    {
+        LogModelEvent($"New world = {e.Data.NewWorld}, previous world = {e.Data.PrevWorld}");
+        _worldController.OnNewWorld(source, e);
     }
 
     public void OnFightStop(object? source, WorldEventArgs<(bool IsHeroDead, IHero Hero)> e)
     {
-        _logQueue.Add($"[{DateTime.Now}]: ${nameof(OnFightStop)} is called with {e.Data}");
+        LogModelEvent($"Fight stopped with result = {e.Data}");
         _worldController.OnFightStop(source, e);
     }
 
     public void OnGameOver(object? source, WorldEventArgs<IHero> e)
     {
-        _logQueue.Add($"[{DateTime.Now}]: ${nameof(OnGameOver)} is called with {e.Data}");
+        LogModelEvent($"Game over for hero = {e.Data}");
         _worldController.OnGameOver(source, e);
     }
 
     public void OnGameToken(object? source, WorldEventArgs<IDiscoverableArtifact> e)
     {
-        _logQueue.Add($"[{DateTime.Now}]: ${nameof(OnGameToken)} is called with {e.Data}");
+        LogModelEvent($"Game token discovered = {e.Data}");
         _worldController.OnGameToken(source, e);
     }
 
     public void OnGoal(object? source, WorldEventArgs<IGameEntity> e)
     {
-        _logQueue.Add($"[{DateTime.Now}]: ${nameof(OnGoal)} is called with {e.Data}");
+        LogModelEvent($"Goal reached with entity = {e.Data}");
         _worldController.OnGoal(source, e);
     }
 
     public void OnWorldTime(object? source, ElapsedEventArgs e)
     {
-        _logQueue.Add($"[{DateTime.Now}]: ${nameof(OnWorldTime)} is called");
+        LogModelEvent("World time event triggered");
         _worldController.OnWorldTime(source, e);
     }
 
     public bool IsGameOver()
     {
-        _logQueue.Add($"[{DateTime.Now}]: ${nameof(IsGameOver)} is called");
+        LogMethodCall("Checking if game is over");
         return _worldController.IsGameOver();
     }
 
-    public void InitWorld()
-    {
-        _logQueue.Add($"[{DateTime.Now}]: ${nameof(InitWorld)} is called");
-        _worldController.InitWorld();
-    }
-
     public bool IsFightingEnemy(out IEnemy? enemy)
-    {        
-        enemy = _worldController.GetFightingEnemy();
-        _logQueue.Add($"[{DateTime.Now}]: ${nameof(IsFightingEnemy)} is called");
-        return _worldController.IsFightingEnemy(out enemy);
+    {
+        bool result = _worldController.IsFightingEnemy(out enemy);
+        LogMethodCall($"Checking if fighting enemy: {enemy}");
+        return result;
     }
 
     public IEnemy? GetFightingEnemy()
     {
-        _logQueue.Add($"[{DateTime.Now}]: ${nameof(GetFightingEnemy)} is called");
+        LogMethodCall("Getting current fighting enemy");
         return _worldController.GetFightingEnemy();
     }
 
     public void SetupFightInfoState(IEnemy enemy, bool waitForUserInput)
     {
-        _logQueue.Add($"[{DateTime.Now}]: ${nameof(SetupFightInfoState)} is called with {enemy}");
+        LogMethodCall($"Setting up fight info state for enemy = {enemy}, wait for user input = {waitForUserInput}");
         _worldController.SetupFightInfoState(enemy, waitForUserInput);
     }
 

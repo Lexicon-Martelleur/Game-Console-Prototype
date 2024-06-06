@@ -7,17 +7,16 @@ using Game.Model.Terrain;
 namespace Game.Model.World;
 
 // TODO! Create an abstract base class.
-// TODO! Rename to grass world
 public class GrassWorld : IWorld
 {
-    private WorldMap? _worldMap;
+    private WorldMap? _worldMap; 
 
     private readonly int _width = WorldConstant.WIDTH;
     
     private readonly int _height = WorldConstant.HEIGHT;
 
     private string _name;
-
+    
     private readonly IFlag _flag;
 
     private IEnumerable<IDiscoverableArtifact> _worldItems;

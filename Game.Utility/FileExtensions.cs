@@ -16,7 +16,7 @@ public static class FileExtensions
         string fileNameWithTimestamp =
             $"{Path.GetFileNameWithoutExtension(baseFileName)}_" +
             $"{timestamp}{Path.GetExtension(baseFileName)}";
-        return fileNameWithTimestamp.CreateFileIfNotExist(dirName);
+        return fileNameWithTimestamp.CreateFileIfNotExist(dirName, timestamp);
     }
 
     /// <summary>
@@ -26,14 +26,16 @@ public static class FileExtensions
     /// <param name="dirName">The name of the directory of the file.</param>
     /// <returns>The absolute path to the created file</returns>
     /// <exception cref="IOException">Throws IO exception if the file could not be created.</exception>
-    public static string CreateFileIfNotExist(this string fileName, string dirName)
+    public static string CreateFileIfNotExist(this string fileName, string dirName, string timeStamp)
     {
         try
         {
-            CreateDirIfNotExist(dirName);
+            // CreateDirIfNotExist(dirName);
+            CreateDirIfNotExist(Path.Combine(dirName, timeStamp));
             string absolutePath = Path.Combine(
                 Environment.CurrentDirectory,
                 dirName,
+                timeStamp,
                 fileName);
             if (!File.Exists(absolutePath))
             {

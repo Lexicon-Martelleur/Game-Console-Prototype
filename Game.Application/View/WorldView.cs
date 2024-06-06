@@ -11,14 +11,7 @@ namespace Game.Application.View;
 
 internal class WorldView : IWorldView
 {
-    private int _cellWidth = 3;
-
     private string[,]? _previousDrawnMap;
-
-    internal WorldView()
-    {
-        Console.Title = ConsoleGame.NAME;
-    }
 
     public void DrawWorld(
         IWorldService worldService,
@@ -40,7 +33,7 @@ internal class WorldView : IWorldView
                 string currentSymbol = GetCellSymbol(map.Cells[y, x]);
                 if (_previousDrawnMap[y, x] != currentSymbol)
                 {
-                    Console.SetCursorPosition(x * _cellWidth, y);
+                    Console.SetCursorPosition(x * ViewConstant.CELL_WIDTH, y);
                     Console.BackgroundColor = map.Cells[y, x].Terrain.Color;
                     Console.Write($"{currentSymbol}");
                     _previousDrawnMap[y, x] = currentSymbol;
@@ -60,23 +53,12 @@ internal class WorldView : IWorldView
     private string GetCellSymbol(Cell cell)
     {
         var artifact = cell.Artifact;
-        return GetConsistentWidth(artifact?.Symbol ?? cell.Terrain.Symbol, _cellWidth);
+        return GetConsistentWidth(artifact?.Symbol ?? cell.Terrain.Symbol, ViewConstant.CELL_WIDTH);
     }
 
     private string GetConsistentWidth(string content, int width)
     {
-        string consistentCellWidth = "   ";
-
-        if (content.Length > width)
-        {
-            consistentCellWidth = content.Substring(0, width);
-        }
-        else if (content.Length < width)
-        {
-            consistentCellWidth = content.PadRight(width);
-        }
-
-        return consistentCellWidth;
+        return content.GetConsistentWidth(width);
     }
 
     private string GetGameInfoText(IWorldService worldService, string msg)
@@ -138,7 +120,7 @@ internal class WorldView : IWorldView
     public string GetInvalidMoveText(IHero hero, Position invalidPos)
     {
         return GetConsistentWidth(
-            $"⚠ {hero.Name} {hero.Symbol} can not move to coordinates ({invalidPos.x}, {invalidPos.y})",
+            $"⚠  {hero.Name} {hero.Symbol} can not move to coordinates ({invalidPos.x}, {invalidPos.y})",
             100
         );
     }
