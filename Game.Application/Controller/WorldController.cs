@@ -12,8 +12,7 @@ namespace Game.Controller;
 internal class WorldController(
     SynchronizationContext syncronizationContext,
     IWorldView worldView,
-    IWorldService worldService,
-    IFightController fightController) : IWorldController
+    IWorldService worldService) : IWorldController
 {
     private bool _gameOver = false;
 
@@ -162,14 +161,14 @@ internal class WorldController(
         }
     }
 
-    public void FightExistingEnemy(IEnemy? enemy)
+    public void FightExistingEnemy(IEnemy? enemy, Action<IHero, IEnemy> startFight)
     {
         if (enemy == null)
         {
             return;
         }
         worldService.CloseWorld();
-        fightController.StartFight(worldService.Hero, enemy);
+        startFight(worldService.Hero, enemy);
         worldService.InitWorld(GetWorldEvents());
         worldService.RemoveDeadCreatures(enemy);
     }

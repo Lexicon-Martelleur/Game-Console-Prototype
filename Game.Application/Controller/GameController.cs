@@ -4,7 +4,8 @@ namespace Game.Controller;
 
 internal class GameController(
     SynchronizationContext syncronizationContext,
-    IWorldController worldController
+    IWorldController worldController,
+    IFightController fightController
 ) : IGameController
 {
 
@@ -17,7 +18,9 @@ internal class GameController(
         {
             if (worldController.IsFightingEnemy(out IEnemy? enemy))
             {
-                worldController.FightExistingEnemy(enemy);
+                worldController.FightExistingEnemy(
+                    enemy,
+                    fightController.StartFight);
             }
             worldController.DrawWorld();
             worldController.HandleMoveCommand();

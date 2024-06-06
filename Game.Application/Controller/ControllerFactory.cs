@@ -32,15 +32,14 @@ internal class ControllerFactory
         return new FightController(fightView, _worldService);
     }
 
-    internal IWorldController CreateWorldController(IFightController fightController)
+    internal IWorldController CreateWorldController()
     {
         IWorldView worldView = new WorldView();
 
         IWorldController worldController = new WorldController(
             _synchronizationContext,
             worldView,
-            _worldService,
-            fightController);
+            _worldService);
 
         return new WorldControllerLogProxy(
             worldController,
@@ -49,17 +48,25 @@ internal class ControllerFactory
 
     }
 
-    internal IGameController CreateGameController(IWorldController worldController)
+    internal IGameController CreateGameController(
+        IWorldController worldController,
+        IFightController fightController
+    )
     {
-        return new GameController(_synchronizationContext, worldController);
-
+        return new GameController(
+            _synchronizationContext,
+            worldController,
+            fightController);
     }
 
     // TODO! Use this when Disposable is implemented
-    internal IGameController CreateGameController()
+    internal IGameController CreateDefaultGameController()
     {
         IFightController fightController = CreateFightController();
-        IWorldController worldController = CreateWorldController(fightController);
-        return new GameController(_synchronizationContext, worldController);
+        IWorldController worldController = CreateWorldController();
+        return new GameController(
+            _synchronizationContext,
+            worldController,
+            fightController);
     }
 }

@@ -8,7 +8,7 @@ namespace Game.Controller
     internal interface IWorldController
     {
         void DrawWorld(bool pause = false);
-        void FightExistingEnemy(IEnemy? enemy);
+        void FightExistingEnemy(IEnemy? enemy, Action<IHero, IEnemy> startFight);
         void HandleMoveCommand();
         bool IsGameOver();
         void InitWorld();

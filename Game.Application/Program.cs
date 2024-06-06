@@ -1,4 +1,8 @@
-﻿// TODO Rename namespace Game.* to Game.Application.*
+﻿// TODO! Implement proxy for game controller and fight controller.
+
+// TODO! Update logging proxy.
+
+// TODO! Rename namespace Game.* to Game.Application.*
 using Game.Application.Controller;
 using Game.Controller;
 using Game.Model.Repository;
@@ -19,9 +23,12 @@ var controllerFactory = new ControllerFactory(
 
 var fightController = controllerFactory.CreateFightController();
 
-var worldController = controllerFactory.CreateWorldController(fightController);
+var worldController = controllerFactory.CreateWorldController();
 
-var gameController = controllerFactory.CreateGameController(worldController);
+var gameController = controllerFactory.CreateGameController(
+    worldController,
+    fightController
+);
 
 gameController.Start();
 

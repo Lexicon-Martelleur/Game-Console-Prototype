@@ -50,10 +50,10 @@ public class WorldControllerLogProxy : IWorldController
         _gameController.DrawWorld();
     }
 
-    public void FightExistingEnemy(IEnemy? enemy)
+    public void FightExistingEnemy(IEnemy? enemy, Action<IHero, IEnemy> startFight)
     {
         _logQueue.Add($"[{DateTime.Now}]: ${nameof(FightExistingEnemy)} is called with {enemy}");
-        _gameController.FightExistingEnemy(enemy);
+        _gameController.FightExistingEnemy(enemy, startFight);
     }
 
     public void HandleMoveCommand()
