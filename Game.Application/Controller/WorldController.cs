@@ -9,6 +9,7 @@ using Game.Model.Base;
 
 namespace Game.Application.Controller;
 
+// TODO! Clean up when draw world is drawn.
 internal class WorldController : IWorldController
 {
     private bool _gameOver = false;
@@ -162,7 +163,7 @@ internal class WorldController : IWorldController
                 _worldView.WriteGameCongratulation();
                 _worldService.CloseWorld();
             }
-            else if (_worldService.Hero.Health == 0)
+            else if (_worldService.GetHeroHealth() == 0)
             {
                 _gameOver = true;
                 var msg = _worldView.GetGameOverText(_worldService.Hero);

@@ -337,6 +337,10 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         FightStartEvent?.Invoke(this, e);
     }
 
+    public uint GetHeroHealth() { 
+        return Hero.Health;
+    }
+
     public void RemoveDeadCreatures(IEnemy enemy)
     {
         if (!IsHeroDead()) 

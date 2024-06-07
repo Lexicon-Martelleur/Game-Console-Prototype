@@ -33,6 +33,8 @@ public interface IWorldService
 
     public string GetGoalMessage();
 
+    public uint GetHeroHealth();
+
     public void MoveHeroToNextPosition(Move move);
 
     public void RemoveDeadCreatures(IEnemy enemy);
