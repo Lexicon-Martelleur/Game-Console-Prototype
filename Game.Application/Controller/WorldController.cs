@@ -162,6 +162,13 @@ internal class WorldController : IWorldController
                 _worldView.WriteGameCongratulation();
                 _worldService.CloseWorld();
             }
+            else if (_worldService.Hero.Health == 0)
+            {
+                _gameOver = true;
+                var msg = _worldView.GetGameOverText(_worldService.Hero);
+                _worldView.DrawWorld(_worldService, map, msg, pause);
+                _worldService.CloseWorld();
+            }
             else
             {
                 var msg = _additionalMessage;

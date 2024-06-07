@@ -206,7 +206,6 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         {
             Hero.UpdatePosition(nextPos);
             UpdatePlayerHealth(nextPos);
-            // CheckIsGameOver();
             FightingEnemy = GetFightingEnemy();
             IsFight();
             PickupExistingHeart();
