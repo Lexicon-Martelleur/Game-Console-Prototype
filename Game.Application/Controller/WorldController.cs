@@ -45,7 +45,7 @@ internal class WorldController : IWorldController
 
     public WorldEvents SubscribedWorldEvents { get; set; }
 
-    public void OnGoal(Object? source, WorldEventArgs<IGameEntity> e)
+    public void OnGoal(object? source, WorldEventArgs<IGameEntity> e)
     {
         var isGoalMsg = _worldView.GetIsGoalText(e.Data);
         _additionalMessage = isGoalMsg;
@@ -63,7 +63,7 @@ internal class WorldController : IWorldController
         DrawWorld();
     }
 
-    public void OnGameOver(Object? source, WorldEventArgs<IHero> e)
+    public void OnGameOver(object? source, WorldEventArgs<IHero> e)
     {
         _worldService.CloseWorld();
         _gameOver = true;
@@ -71,7 +71,7 @@ internal class WorldController : IWorldController
         DrawWorld();
     }
 
-    public void OnFightStart(Object? source, WorldEventArgs<IEnemy> e)
+    public void OnFightStart(object? source, WorldEventArgs<IEnemy> e)
     {
         _worldService.CloseWorld();
         bool waitForUserInput = true;
@@ -101,18 +101,18 @@ internal class WorldController : IWorldController
         }
     }
 
-    public void OnGameToken(Object? source, WorldEventArgs<IDiscoverableArtifact> e)
+    public void OnGameToken(object? source, WorldEventArgs<IDiscoverableArtifact> e)
     {
         var pickedUpTokenMsg = _worldView.GetPickedUpTokenText(e.Data);
         _additionalMessage = pickedUpTokenMsg;
     }
 
-    public void OnInvalidMove(Object? source, WorldEventArgs<Position> e)
+    public void OnInvalidMove(object? source, WorldEventArgs<Position> e)
     {
         _additionalMessage = _worldView.GetInvalidMoveText(_worldService.Hero, e.Data);
     }
 
-    public void OnWorldTime(Object? source, Timers.ElapsedEventArgs e)
+    public void OnWorldTime(object? source, Timers.ElapsedEventArgs e)
     {
         var worldEnemy = _worldService.FightingEnemy;
         if (worldEnemy == null)

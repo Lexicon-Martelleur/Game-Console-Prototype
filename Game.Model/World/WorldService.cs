@@ -27,26 +27,25 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
 
     private WorldEvents _worldEventsWrapper;
 
-    public IHero Hero { get => hero; }
+    public IHero Hero => hero;
 
-    public IWorld CurrentWorld {
-        get => worlds.Peek();
+    public IWorld CurrentWorld => worlds.Peek();
+
+    public IEnemy? FightingEnemy
+    {
+        get => _fightingEnemy;
+        private set => _fightingEnemy = value;
     }
 
     public event EventHandler<WorldEventArgs<IHero>>? GameOverEvent;
 
     public event EventHandler<WorldEventArgs<IEnemy>>? FightStartEvent;
 
-    public event EventHandler<WorldEventArgs<(
-        bool IsHeroDead, IHero Hero
-    )>>? FightStopEvent;
+    public event EventHandler<WorldEventArgs<(bool IsHeroDead, IHero Hero)>>? FightStopEvent;
 
-    public event EventHandler<WorldEventArgs<IDiscoverableArtifact>>? PickTokenEvent;
+    public event EventHandler<WorldEventArgs<IDiscoverableArtifact>>? CollectTokenEvent;
 
-    public IEnemy? FightingEnemy { 
-        get => _fightingEnemy;
-        private set => _fightingEnemy = value;
-    }
+    public event EventHandler<WorldEventArgs<IGameEntity>>? PickFlagEvent;
 
     public event EventHandler<WorldEventArgs<Position>>? InvalidMoveEvent;
 
@@ -69,7 +68,7 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         _worldTimer.Enabled = true;
 
         _worldEventsWrapper.OnGoal = OnGoalWrapper;
-        CurrentWorld.Flag.Collected += _worldEventsWrapper.OnGoal;
+        PickFlagEvent += _worldEventsWrapper.OnGoal;
 
         _worldEventsWrapper.OnGameOver = OnGameOverWrapper;
         GameOverEvent += _worldEventsWrapper.OnGameOver;
@@ -81,7 +80,7 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         FightStopEvent += _worldEventsWrapper.OnFightStop;
 
         _worldEventsWrapper.OnGameToken = OnGameTokenWrapper;
-        PickTokenEvent += _worldEventsWrapper.OnGameToken;
+        CollectTokenEvent += _worldEventsWrapper.OnGameToken;
 
         _worldEventsWrapper.OnInvalidMove = worldEvents.OnInvalidMove;
         InvalidMoveEvent += _worldEventsWrapper.OnInvalidMove;
@@ -89,7 +88,7 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         _isWorldClosed = false;
     }
 
-    private void OnWorldTimeWrapper(Object? source, Timers.ElapsedEventArgs e)
+    private void OnWorldTimeWrapper(object? source, Timers.ElapsedEventArgs e)
     {
         UpdateEnenmyPositions();
         FightingEnemy = GetFightingEnemy();
@@ -113,7 +112,7 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         }
     }
 
-    private void OnGoalWrapper(Object? source, WorldEventArgs<IGameEntity> e)
+    private void OnGoalWrapper(object? source, WorldEventArgs<IGameEntity> e)
     {
         Hero.Flags.Append(e.Data);
         CurrentWorld.WorldItems = CurrentWorld.WorldItems
@@ -142,13 +141,13 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         _worldEvents.OnNewWorld(this, e);
     }
 
-    private void OnGameOverWrapper(Object? source, WorldEventArgs<IHero> e)
+    private void OnGameOverWrapper(object? source, WorldEventArgs<IHero> e)
     {
         _worldEvents.OnGameOver(source, e);
         CloseWorld();
     }
 
-    private void OnGameTokenWrapper(Object? source, WorldEventArgs<IDiscoverableArtifact> e)
+    private void OnGameTokenWrapper(object? source, WorldEventArgs<IDiscoverableArtifact> e)
     {
         CurrentWorld.WorldItems = CurrentWorld.WorldItems
             .Where(item => e.Data.Position != item.Position);
@@ -267,29 +266,40 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
 
     private void PickupExistingHeart()
     {
-        CurrentWorld.WorldItems.ToList().ForEach(AddHealthToPlayer);
+        CurrentWorld.WorldItems
+            .OfType<IHeart>()
+            .ToList()
+            .ForEach(AddHealthToPlayer);
     }
 
-    private void AddHealthToPlayer(IDiscoverableArtifact item)
+    private void AddHealthToPlayer(IHeart heart)
     {
-        if (item is IHeart)
+        if (heart.IsCollectible(Hero, out IDiscoverableArtifact collectedHeart))
         {
-            var heart = item as IHeart;
-            if (heart != null &&
-                heart.PickUpExistingItem(Hero, out IDiscoverableArtifact artifact))
-            {
-                var eventArgs = new WorldEventArgs<IDiscoverableArtifact>(artifact);
-                PickTokenEvent?.Invoke(this, eventArgs);
-            }
-        }
+            OnHeartCollected(heart, collectedHeart);
+        } 
+    }
+
+    private void OnHeartCollected(IHeart heart, IDiscoverableArtifact collectedHeart)
+    {
+        Hero.Health = Hero.Health + heart.HealthInjection;
+        var eventArgs = new WorldEventArgs<IDiscoverableArtifact>(collectedHeart);
+        CollectTokenEvent?.Invoke(this, eventArgs);
     }
 
     private void PickupExistingFlag()
     {
-        if (CurrentWorld.Flag.PickUpExistingItem(Hero, out IGameEntity entity))
+        if (CurrentWorld.Flag.IsCollectible(Hero, out IGameEntity discoveredFlag))
         {
-            Hero.Flags.Append(entity);
-        }   
+            OnFlagCollected(discoveredFlag);
+        }
+    }
+
+    private void OnFlagCollected(IGameEntity collectedFlag)
+    {
+        Hero.Flags.Append(collectedFlag);
+        var eventArgs = new WorldEventArgs<IGameEntity>(collectedFlag);
+        PickFlagEvent?.Invoke(this, eventArgs);
     }
 
     private void OnInvalidMove(Position invalidPos)
@@ -406,15 +416,10 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         _worldTimer.Elapsed -= _worldEventsWrapper.OnWorldTime;
         GameOverEvent -= _worldEventsWrapper.OnGameOver;
         FightStartEvent -= _worldEventsWrapper.OnFightStart;
-        PickTokenEvent -= _worldEventsWrapper.OnGameToken;
+        CollectTokenEvent -= _worldEventsWrapper.OnGameToken;
         FightStopEvent -= _worldEventsWrapper.OnFightStop;
+        PickFlagEvent -= _worldEventsWrapper.OnGoal;
         _worldTimer.Close();
-
-        try
-        {
-            CurrentWorld.Flag.Collected -= _worldEventsWrapper.OnGoal;
-        }
-        catch { }
 
         _isWorldClosed = true;
     }

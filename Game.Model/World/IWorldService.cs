@@ -19,11 +19,11 @@ public interface IWorldService
 
     public event EventHandler<WorldEventArgs<IEnemy>>? FightStartEvent;
 
-    public event EventHandler<WorldEventArgs<(
-        bool IsHeroDead, IHero Hero
-    )>>? FightStopEvent;
+    public event EventHandler<WorldEventArgs<(bool IsHeroDead, IHero Hero)>>? FightStopEvent;
 
-    public event EventHandler<WorldEventArgs<IDiscoverableArtifact>>? PickTokenEvent;
+    public event EventHandler<WorldEventArgs<IDiscoverableArtifact>>? CollectTokenEvent;
+
+    public event EventHandler<WorldEventArgs<IGameEntity>>? PickFlagEvent;
 
     public event EventHandler<WorldEventArgs<Position>>? InvalidMoveEvent;
 

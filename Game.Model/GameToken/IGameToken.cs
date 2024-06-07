@@ -2,4 +2,4 @@
 
 namespace Game.Model.GameToken;
 
-public interface IGameToken : ICollectable<IDiscoverableArtifact>, IDiscoverableArtifact { }
+public interface IGameToken : ICollectible<IDiscoverableArtifact> { }
