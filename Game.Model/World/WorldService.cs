@@ -1,6 +1,4 @@
-﻿// Ignore Spelling: Collectable
-
-using Timers = System.Timers;
+﻿using Timers = System.Timers;
 
 using Game.Model.GameEntity;
 using Game.Model.Map;
@@ -114,22 +112,20 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
 
     private void OnGoalWrapper(object? source, WorldEventArgs<IGameEntity> e)
     {
-        Hero.Flags.Append(e.Data);
-        CurrentWorld.WorldItems = CurrentWorld.WorldItems
-            .Where(item => e.Data.Position != item.Position);
-
-        if (worlds.Count == 1)
+        if (worlds.Count == 0)
         {
-            _worldEvents.OnGoal(source, e);
-            var prewWorld = worlds.Pop();
-            CloseWorld();
+            var gameOverEventARgs = new WorldEventArgs<IHero>(Hero);
+            OnGameOverWrapper(source, gameOverEventARgs);
         }
         else
         {
+            Hero.Flags.Append(e.Data);
+            CurrentWorld.WorldItems = CurrentWorld.WorldItems
+                .Where(item => e.Data.Position != item.Position);
             _worldEvents.OnGoal(source, e);
-            var prewWorld = worlds.Pop();
             Hero.UpdatePosition(new Position(0, 0)); // TODO Move to WorldRef type;
-            OnNewWorld(prewWorld);
+            var prevWorld = worlds.Pop();
+            OnNewWorld(prevWorld);
         }
     }
 
@@ -210,11 +206,12 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         {
             Hero.UpdatePosition(nextPos);
             UpdatePlayerHealth(nextPos);
-            CheckIsGameOver();
+            // CheckIsGameOver();
             FightingEnemy = GetFightingEnemy();
             IsFight();
             PickupExistingHeart();
             PickupExistingFlag();
+            CheckIsGameOver();
         }
         else 
         {

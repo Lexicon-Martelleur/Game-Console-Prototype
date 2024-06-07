@@ -114,16 +114,19 @@ internal class WorldController : IWorldController
 
     public void OnWorldTime(object? source, Timers.ElapsedEventArgs e)
     {
-        var worldEnemy = _worldService.FightingEnemy;
-        if (worldEnemy == null)
+        _syncronizationContext.Send(HandleOnWorldTime, null);
+    }
+
+    private void HandleOnWorldTime(object? state)
+    {
+        var fightingEnemy = _worldService.FightingEnemy;
+        if (fightingEnemy == null)
         {
             DrawWorld();
         }
         else
         {
-            _syncronizationContext.Send(
-                _ => SetupFightInfoState(worldEnemy, false),
-                null);
+            SetupFightInfoState(fightingEnemy, false);
         }
     }
 
@@ -158,7 +161,7 @@ internal class WorldController : IWorldController
                 _gameOver = true;
                 _worldView.WriteGameCongratulation();
                 _worldService.CloseWorld();
-            } 
+            }
             else
             {
                 var msg = _additionalMessage;
@@ -181,8 +184,10 @@ internal class WorldController : IWorldController
 
     public void HandleMoveCommand()
     {
-        DrawWorld();
-        var move = _worldView.GetCommand();
-        _worldService.MoveHeroToNextPosition(move);
+        try {
+            DrawWorld();
+            var move = _worldView.GetCommand();
+             _worldService.MoveHeroToNextPosition(move);
+        } catch { }
     }
 }
