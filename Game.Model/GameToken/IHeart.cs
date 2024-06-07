@@ -1,4 +1,6 @@
-﻿namespace Game.Model.GameToken;
+﻿using Game.Model.Base;
+
+namespace Game.Model.GameToken;
 
 public interface IHeart : IGameToken
 {
