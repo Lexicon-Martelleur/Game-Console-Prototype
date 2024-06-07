@@ -1,9 +1,9 @@
 # Issues
 
-Issues and bugs
+Issues and bugs list
 
 ## Game.Application Module
 
-- Hard to understand event, events dependent on other events, improve DX.
+- Event logic hard to follow, events dependent on other events. Try to improve DX.
 
-- Change position to start position on last map.
+- World type may need a WorldRef type that decide the rules of the world.
