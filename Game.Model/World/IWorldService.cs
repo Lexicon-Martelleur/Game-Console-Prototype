@@ -7,11 +7,14 @@ using Game.Model.Base;
 
 namespace Game.Model.World;
 
+/// <summary>
+/// An interface describing world logic and information.
+/// </summary>
 public interface IWorldService
 {
     public IHero Hero { get; }
 
-    public IWorld CurrentWorld { get; }
+    public IWorld? CurrentWorld { get; }
 
     public IEnemy? FightingEnemy { get; }
 
@@ -31,6 +34,8 @@ public interface IWorldService
 
     public void InitWorld(WorldEvents worldEvents);
 
+    public uint GetTotalTime();
+
     public string GetGoalMessage();
 
     public uint GetHeroHealth();
@@ -42,8 +47,6 @@ public interface IWorldService
     public string GetTerrainDescription();
 
     public void UpdateCreatureHealth(ICreature entity, IWeapon weapon);
-
-    public bool IsFightOver(IHero player, IEnemy enemy);
 
     public void CloseWorld();
 }

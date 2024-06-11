@@ -2,6 +2,7 @@
 using Game.Model.Repository;
 using Game.Model.World;
 using Game.Application.View;
+using Game.Model.Fight;
 
 namespace Game.Application.Controller;
 
@@ -25,7 +26,8 @@ internal class ControllerFactory
     internal IFightController CreateFightController()
     {
         IFightView fightView = new FightView();
-        return new FightController(fightView, _worldService);
+        IFightService fightService = new FightService(_worldService);
+        return new FightController(fightView, fightService);
     }
 
     internal IWorldController CreateWorldController()

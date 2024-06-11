@@ -5,6 +5,9 @@ using Game.Model.Terrain;
 
 namespace Game.Model.World;
 
+/// <summary>
+/// An interface used to describe the world and the rules of the world.
+/// </summary>
 public interface IWorld : IGameArtifact
 {
     WorldMap? Map { get; }
@@ -18,6 +21,7 @@ public interface IWorld : IGameArtifact
     /// <returns>A <see cref="WorldMap"/> of the current state of the world.</returns>
     /// <exception cref="InvalidWorldState">When invalid world state.</exception>
     public WorldMap CreateWorldSnapShot(IHero hero);
+    public uint WorldTime { get; set; }
     public bool IsCliffTerrain(Position position);
     public bool IsFireTerrain(Position position);
     public bool IsOutsideMap(Position position);

@@ -10,3 +10,4 @@ Issues and bugs list
 
 - Application freeze on rare occasion when player run into an enemy (probably when
 enemy and hero is changing to the same position the same time the map is drawn).
+(Enenmy disseapera???)

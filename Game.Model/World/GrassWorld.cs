@@ -22,6 +22,8 @@ public class GrassWorld : IWorld
 
     private IEnumerable<IDiscoverableArtifact> _worldItems;
 
+    private uint _worldTime = 0;
+
     public WorldMap? Map { get => _worldMap; }
 
     public IFlag Flag { get => _flag; }
@@ -43,6 +45,11 @@ public class GrassWorld : IWorld
         _name = name;
         _flag = flag;
         _worldItems = worldItems.Append(Flag);
+    }
+
+    public uint WorldTime {
+        get => _worldTime;
+        set => _worldTime = value;
     }
 
     /// <summary>
@@ -102,7 +109,7 @@ public class GrassWorld : IWorld
         get => _worldItems;
         set => _worldItems = value;
     }
-
+    
     /// <summary>
     /// Used to get a snapshot of the world.
     /// </summary>
@@ -230,15 +237,13 @@ public class GrassWorld : IWorld
 
     public IDangerousTerrain? GetDangerousTerrain(Position position)
     {
-        Cell? findCell = null;
-        var worldCells = _worldMap?.Cells;
-
-        if (worldCells == null)
+        if (_worldMap?.Cells == null)
         {
             return null;
         }
-        
-        foreach (Cell cell in worldCells)
+
+        Cell? findCell = null;
+        foreach (Cell cell in _worldMap.Cells)
         {
             if (cell.Position == position)
             {

@@ -10,6 +10,13 @@ using Game.Model.GameToken;
 
 namespace Game.Model.World;
 
+
+/// <summary>
+/// A class implementing <see cref="IWorldService" /> used for game logic
+/// and game information.
+/// </summary>
+/// <param name="hero">Hero used in the game.</param>
+/// <param name="worlds">World used in the game.</param>
 public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
 {
     private bool _oddTimeFrame = false;
@@ -23,6 +30,8 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
     private WorldEvents _worldEvents;
 
     private WorldEvents _worldEventsWrapper;
+
+    private uint _totalTime = 0;
 
     public IHero Hero => hero;
 
@@ -58,7 +67,7 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
     public void InitWorld(WorldEvents worldEvents)
     {
         _worldEvents = worldEvents;
-        
+
         _worldEventsWrapper.OnWorldTime = OnWorldTimeWrapper;
         _worldTimer.Elapsed += _worldEventsWrapper.OnWorldTime;
         _worldTimer.AutoReset = true;
@@ -89,6 +98,7 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
     {
         UpdateEnenmyPositions();
         FightingEnemy = GetFightingEnemy();
+        CurrentWorld.WorldTime++;
         _worldEvents.OnWorldTime(source, e);
     }
 
@@ -124,14 +134,26 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
             var gameOverEventARgs = new WorldEventArgs<IHero>(Hero);
             OnGameOverWrapper(source, gameOverEventARgs);
         }
+        else if (worlds.Count == 1)
+        {
+            Hero.Flags.Append(e.Data);
+            CurrentWorld.WorldItems = CurrentWorld.WorldItems
+                .Where(item => e.Data.Position != item.Position);
+            _worldEvents.OnGoal(source, e);
+            _totalTime += CurrentWorld.WorldTime;
+            CloseWorld();
+            var prevWorld = worlds.Pop();
+        }
         else
         {
             Hero.Flags.Append(e.Data);
             CurrentWorld.WorldItems = CurrentWorld.WorldItems
                 .Where(item => e.Data.Position != item.Position);
             _worldEvents.OnGoal(source, e);
-            Hero.UpdatePosition(Hero.InitialPosition, CurrentWorld.IsValidHeroPosition);
+            _totalTime += CurrentWorld.WorldTime;
+            CloseWorld();
             var prevWorld = worlds.Pop();
+            Hero.UpdatePosition(Hero.InitialPosition, CurrentWorld.IsValidHeroPosition);
             OnNewWorld(prevWorld);
         }
     }
@@ -159,9 +181,9 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
 
     public string GetGoalMessage()
     {
-        return $"{CurrentWorld.Symbol} {CurrentWorld.Name}: " +
+        return $"{CurrentWorld.Symbol} {CurrentWorld.Name} ({CurrentWorld.WorldTime}s)  : " +
             $"Take the flag {CurrentWorld.Flag.Symbol} at " +
-            $"map {CurrentWorld.Map?.Symbol ?? ""} coordinates "+
+            $"map {CurrentWorld.Map?.Symbol ?? ""} coordinates " +
             $"[{CurrentWorld.Flag.Position.x}, {CurrentWorld.Flag.Position.y}] " +
             $"to win";
     }
@@ -183,7 +205,7 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
             PickupExistingFlag();
             CheckIsGameOver();
         }
-        else 
+        else
         {
             OnInvalidMove(nextPos);
         }
@@ -236,7 +258,7 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         if (heart.IsCollectible(Hero, out IDiscoverableArtifact collectedHeart))
         {
             OnHeartCollected(heart, collectedHeart);
-        } 
+        }
     }
 
     private void OnHeartCollected(IHeart heart, IDiscoverableArtifact collectedHeart)
@@ -300,13 +322,19 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         FightStartEvent?.Invoke(this, e);
     }
 
-    public uint GetHeroHealth() { 
+    public uint GetHeroHealth()
+    {
         return Hero.Health;
+    }
+
+    public uint GetTotalTime()
+    {
+        return _totalTime;
     }
 
     public void RemoveDeadCreatures(IEnemy enemy)
     {
-        if (!IsHeroDead()) 
+        if (!IsHeroDead())
         {
             CurrentWorld.WorldItems = CurrentWorld.WorldItems.Where(item =>
                 enemy.Position != item.Position &&
@@ -355,11 +383,6 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         {
             entity.Health = entity.Health - weapon.ReduceHealth;
         }
-    }
-
-    public bool IsFightOver(IHero player, IEnemy enemy)
-    {
-        return player.Health == 0 || enemy.Health == 0;
     }
 
     private void OnFightStop()

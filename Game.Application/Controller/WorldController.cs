@@ -160,7 +160,7 @@ internal class WorldController : IWorldController
             if (map == null)
             {
                 _gameOver = true;
-                _worldView.WriteGameCongratulation();
+                _worldView.WriteGameCongratulation(_worldService);
                 _worldService.CloseWorld();
             }
             else if (_worldService.GetHeroHealth() == 0)
@@ -196,6 +196,6 @@ internal class WorldController : IWorldController
             DrawWorld();
             var move = _worldView.GetCommand();
              _worldService.MoveHeroToNextPosition(move);
-        } catch { }
+        } catch (Exception e) { Console.WriteLine(e); }
     }
 }

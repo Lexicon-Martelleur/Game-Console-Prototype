@@ -2,6 +2,8 @@
 using Game.Model.Constant;
 using Game.Model.GameEntity;
 using Game.Utility;
+using System.Numerics;
+using System;
 using System.Text;
 
 namespace Game.Application.View;
@@ -14,9 +16,7 @@ internal class FightView() : IFightView
 
     private readonly int _width = WorldConstant.WIDTH;
 
-    public void DrawFight(
-        IHero player,
-        IEnemy enemy)
+    public void DrawArena(IHero hero, IEnemy enemy)
     {
 
         var currBackground = Console.BackgroundColor;
@@ -31,7 +31,7 @@ internal class FightView() : IFightView
             for (int x = 0; x < _width; x++)
             {
                 string currentSymbol = GetConsistentWidth(
-                    GetSymbol(x, y, player, enemy),
+                    GetSymbol(x, y, hero, enemy),
                     ViewConstant.CELL_WIDTH);
                 if (_previousDrawnFight[y, x] != currentSymbol)
                 {
@@ -45,17 +45,22 @@ internal class FightView() : IFightView
 
         Console.BackgroundColor = currBackground;
         Console.SetCursorPosition(0, _height);
+        WriteFightInfo(hero, enemy);
+    }
+
+    private void WriteFightInfo(IHero hero, IEnemy enemy)
+    {
         Console.WriteLine(GetConsistentWidth(
-            $"Fight: {player.Name} {player.Symbol} vs {enemy.Name} {enemy.Symbol}",
-            100
+        $"Fight: {hero.Name} {hero.Symbol} vs {enemy.Name} {enemy.Symbol}",
+        100
         ));
         Console.WriteLine(GetConsistentWidth(
-            $"Health {player.Name} {player.Symbol}: {player.Health}",
-            100
+        $"Health {hero.Name} {hero.Symbol}: {hero.Health}",
+        100
         ));
         Console.WriteLine(GetConsistentWidth(
-            $"Health {enemy.Name} {enemy.Symbol}: {enemy.Health}",
-            100
+        $"Health {enemy.Name} {enemy.Symbol}: {enemy.Health}",
+        100
         ));
     }
 
@@ -85,7 +90,7 @@ internal class FightView() : IFightView
         return content.GetConsistentWidth(width);
     }
 
-    public string ReadWeapon(IHero player)
+    public FightCommand ReadFightCommand(IHero player)
     {
         var weapons = new StringBuilder();
         foreach (var weapon in player.Weapons)
@@ -93,11 +98,22 @@ internal class FightView() : IFightView
             weapons.Append($"[{weapon.Name} {weapon.Symbol}]");
         }
         Console.WriteLine(GetConsistentWidth(
-            $"Press enter to use all weapon ({weapons}):",
+            $"Press space to use all weapon ({weapons}) or move:",
             100
         ));
-        return Console.ReadLine() ?? "sword";
+        ConsoleKey key = Console.ReadKey().Key;
+        return GetFightCommand(key);
     }
+
+    private FightCommand GetFightCommand(ConsoleKey key) => key switch
+    {
+        ConsoleKey.UpArrow => FightCommand.UP,
+        ConsoleKey.RightArrow => FightCommand.RIGHT,
+        ConsoleKey.DownArrow => FightCommand.DOWN,
+        ConsoleKey.LeftArrow => FightCommand.LEFT,
+        ConsoleKey.Spacebar => FightCommand.WEAPON,
+        _ => FightCommand.NONE
+    };
 
     public void ClearScreen()
     {

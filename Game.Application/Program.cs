@@ -7,6 +7,7 @@ using Game.Constant;
 using Game.Model.Repository;
 using Game.Model.World;
 
+// Update console settings
 Console.Title = ConsoleGame.NAME;
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 

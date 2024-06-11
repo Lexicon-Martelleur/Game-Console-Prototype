@@ -1,11 +1,13 @@
 ﻿using Game.Model.Base;
-using Game.Model.Terrain;
 
 namespace Game.Model.Map;
 
+/// <summary>
+/// A class used as a world map container
+/// </summary>
 public class WorldMap : IGameArtifact
 {
-    public Cell[,] Cells { get; private set; }
+    public Cell[,] Cells { get; }
     public int Height { get; }
     public int Width { get; }
 

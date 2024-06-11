@@ -178,9 +178,9 @@ internal class WorldView : IWorldView
         );
     }
 
-    public void WriteGameCongratulation()
+    public void WriteGameCongratulation(IWorldService worldService)
     {
-        Console.WriteLine("🎉 Congratulation you finished the game 🎉");
+        Console.WriteLine($"🎉 Congratulation you finished the game on total time: {worldService.GetTotalTime()}s 🎉");
         Console.In.WaitForEnter();
     }
 
