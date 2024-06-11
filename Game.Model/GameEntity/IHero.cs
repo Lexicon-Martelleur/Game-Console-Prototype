@@ -1,4 +1,5 @@
-﻿using Game.Model.GameToken;
+﻿using Game.Model.Base;
+using Game.Model.GameToken;
 using Game.Model.Weapon;
 
 namespace Game.Model.GameEntity;
@@ -10,4 +11,6 @@ public interface IHero : IGameEntity, IMoveable, ICreature
     IEnumerable<IFlag> Flags { get; set; }
 
     IEnumerable<IGameToken> Tokens { get; set; }
+
+    Position InitialPosition { get; }
 }

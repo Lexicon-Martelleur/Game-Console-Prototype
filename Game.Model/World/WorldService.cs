@@ -7,7 +7,6 @@ using Game.Constant;
 using Game.Model.Events;
 using Game.Model.Base;
 using Game.Model.GameToken;
-using Game.Utility;
 
 namespace Game.Model.World;
 
@@ -100,13 +99,21 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
             .FirstOrDefault(IsFightPosition);
     }
 
+    private bool IsFightPosition(IDiscoverableArtifact item)
+    {
+        return item.Position == Hero.Position;
+    }
+
     private void UpdateEnenmyPositions()
     {
         var newPossition = _oddTimeFrame ? -1 : 1;
         _oddTimeFrame = !_oddTimeFrame;
         foreach (var enemy in CurrentWorld.WorldItems.OfType<IEnemy>())
         {
-            enemy.UpdatePosition(CurrentWorld.GetNewEnemyPosition(enemy));
+            enemy.UpdatePosition(
+                CurrentWorld.GetNewEnemyPosition(enemy),
+                CurrentWorld.IsValidEnemyPosition
+            );
         }
     }
 
@@ -123,7 +130,7 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
             CurrentWorld.WorldItems = CurrentWorld.WorldItems
                 .Where(item => e.Data.Position != item.Position);
             _worldEvents.OnGoal(source, e);
-            Hero.UpdatePosition(new Position(0, 0)); // TODO Move to WorldRef type;
+            Hero.UpdatePosition(Hero.InitialPosition, CurrentWorld.IsValidHeroPosition);
             var prevWorld = worlds.Pop();
             OnNewWorld(prevWorld);
         }
@@ -150,11 +157,6 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         _worldEvents.OnGameToken(source, e);
     }
 
-    private bool IsFightPosition(IDiscoverableArtifact item)
-    {
-        return item.Position == Hero.Position;
-    }
-
     public string GetGoalMessage()
     {
         return $"{CurrentWorld.Symbol} {CurrentWorld.Name}: " +
@@ -173,7 +175,7 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
 
         if (IsNextPlayerPosition(out Position nextPos, move))
         {
-            Hero.UpdatePosition(nextPos);
+            Hero.UpdatePosition(nextPos, CurrentWorld.IsValidHeroPosition);
             UpdatePlayerHealth(nextPos);
             FightingEnemy = GetFightingEnemy();
             IsFight();
@@ -200,7 +202,7 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
             default: break;
         }
         nextPos = new Position(nextX, nextY);
-        return CurrentWorld.IsValidPlayerPosition(nextPos);
+        return CurrentWorld.IsValidHeroPosition(nextPos);
     }
 
     private void UpdatePlayerHealth(Position position)

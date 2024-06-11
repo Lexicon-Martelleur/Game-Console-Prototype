@@ -27,9 +27,12 @@ public class Frog(uint id, Position position) : IEnemy
 
     IWeapon IEnemy.Weapon => new Sword();
 
-    public void UpdatePosition(Position newPosition)
+    public void UpdatePosition(Position newPosition, Func<Position, bool> IsValidWorldPosition)
     {
-        Position = newPosition;
+        if (IsValidWorldPosition(newPosition))
+        {
+            Position = newPosition;
+        }
     }
 
     public IEnumerable<Position> GetPossibleNextPositions()

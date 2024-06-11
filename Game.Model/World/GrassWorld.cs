@@ -3,7 +3,7 @@ using Game.Model.Constant;
 using Game.Model.GameEntity;
 using Game.Model.Map;
 using Game.Model.Terrain;
-using Game.Utility;
+using System;
 
 namespace Game.Model.World;
 
@@ -26,14 +26,71 @@ public class GrassWorld : IWorld
 
     public IFlag Flag { get => _flag; }
 
+
+    /// <summary>
+    /// Used to init and validate the world.
+    /// </summary>
+    /// <param name="name">The name of the world.</param>
+    /// <param name="flag">A flag to be placed in the world.</param>
+    /// <param name="worldItems">World items to be placed in the world.</param>
+    /// <exception cref="InvalidWorldState">When invalid world state.</exception>
     public GrassWorld(
         string name,
         IFlag flag,
         IEnumerable<IDiscoverableArtifact> worldItems)
     {
+        ValidateWorldItems(flag, worldItems);
         _name = name;
         _flag = flag;
         _worldItems = worldItems.Append(Flag);
+    }
+
+    /// <summary>
+    /// Used to validate the worlds before initiated.
+    /// </summary>
+    /// <param name="flag">A flag to be placed in the world.</param>
+    /// <param name="worldItems">World items to be placed in the world.</param>
+    /// <exception cref="InvalidWorldState">When invalid world state.</exception>
+    private void ValidateWorldItems(
+        IFlag flag,
+        IEnumerable<IDiscoverableArtifact> worldItems
+    )
+    {
+        if (!IsValidDiscoverableArtifactPosition(flag.Position))
+        {
+            throw new InvalidWorldState($"Flag have invalid position {flag.Position}");
+        }
+
+        foreach (var enemy in worldItems.OfType<IEnemy>())
+        {
+            if (!IsValidEnemyPosition(enemy.Position)) {  
+                throw new InvalidWorldState($"Enemy have invalid position {enemy.Position}");
+            }
+        }
+
+        foreach (var artifact in worldItems.OfType<IDiscoverableArtifact>())
+        {
+            if (!IsValidDiscoverableArtifactPosition(artifact.Position))
+            {
+                throw new InvalidWorldState($"Discoverable artifact have invalid position {artifact.Position}");
+            }
+        }
+    }
+
+    private bool IsValidDiscoverableArtifactPosition(Position position)
+    {
+        return (
+            IsValidHeroPosition(position) &&
+            GetDangerousTerrain(position) == null
+        );
+    }
+
+    public bool IsValidEnemyPosition(Position position)
+    {
+        return (
+            IsValidHeroPosition(position) &&
+            GetDangerousTerrain(position) == null
+        );
     }
 
     public string Symbol => "🌱";
@@ -46,8 +103,21 @@ public class GrassWorld : IWorld
         set => _worldItems = value;
     }
 
+    /// <summary>
+    /// Used to get a snapshot of the world.
+    /// </summary>
+    /// <param name="hero">The hero in the world</param>
+    /// <returns>A <see cref="WorldMap"/> of the current state of the world.</returns>
+    /// <exception cref="InvalidWorldState">When invalid world state.</exception>
     public WorldMap CreateWorldSnapShot(IHero hero)
     {
+        ValidateWorldItems(_flag, _worldItems);
+
+        if (!IsValidHeroPosition(hero.Position))
+        {
+            throw new InvalidWorldState($"Hero have invalid position {hero.Position}");
+        }
+
         _worldMap = new WorldMap(
             _height,
             _width,
@@ -130,7 +200,7 @@ public class GrassWorld : IWorld
     }
 
 
-    public bool IsValidPlayerPosition(Position position)
+    public bool IsValidHeroPosition(Position position)
     {
         return !(
             IsStoneTerrain(position) ||
@@ -185,7 +255,7 @@ public class GrassWorld : IWorld
         var currPosition = enemy.Position;
         Position nextPosition = currPosition;
         var isValidPos = false;
-        var neigbours = GetPossibleNextPositions(currPosition);
+        var neigbours = enemy.GetPossibleNextPositions();
         foreach (var position in neigbours)
         {
             nextPosition = position;
@@ -193,30 +263,5 @@ public class GrassWorld : IWorld
             if (isValidPos) { break; }
         }
         return nextPosition;
-    }
-
-    private bool IsValidEnemyPosition(Position position)
-    {
-        return (
-            IsValidPlayerPosition(position) &&
-            GetDangerousTerrain(position) == null
-        );
-    }
-
-    // TODO! Move to IEnenmy
-    private List<Position> GetPossibleNextPositions(Position pos)
-    {
-        List<Position> neigbours = [
-            new Position(pos.x, pos.y - 1),
-            new Position(pos.x + 1, pos.y - 1),
-            new Position(pos.x + 1, pos.y),
-            new Position(pos.x + 1, pos.y + 1),
-            new Position(pos.x, pos.y + 1),
-            new Position(pos.x - 1, pos.y + 1),
-            new Position(pos.x - 1, pos.y),
-            new Position(pos.x - 1, pos.y - 1),
-        ];
-        neigbours.Shuffle();
-        return neigbours;
     }
 }

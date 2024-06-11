@@ -4,15 +4,28 @@ using Game.Model.Weapon;
 
 namespace Game.Model.GameEntity;
 
-public class Hero(uint id, Position position) : IHero
+public class Hero : IHero
 {
-    public uint Id => id;
+    public uint Id => _id;
 
     private uint _health = 100;
 
     private IEnumerable<IFlag> _flags = [];
 
     private IEnumerable<IGameToken> _tokens = [];
+    
+    private Position _position;
+
+    private readonly Position _initialPosition;
+
+    private readonly uint _id;
+
+    public Hero(uint id, Position position)
+    {
+        _id = id;
+        _position = position;
+        _initialPosition = position;
+    }
 
     public string Symbol => "🐝";
 
@@ -41,14 +54,19 @@ public class Hero(uint id, Position position) : IHero
         set => _tokens = value;
     }
 
+    public Position InitialPosition => _initialPosition;
+
     public Position Position
     {
-        get => position;
-        private set => position = value;
+        get => _position;
+        private set => _position = value;
     }
 
-    public void UpdatePosition(Position newPosition)
+    public void UpdatePosition(Position newPosition, Func<Position, bool> IsValidWorldPosition)
     {
-        Position = newPosition;
+        if (IsValidWorldPosition(newPosition))
+        {
+            Position = newPosition;
+        }
     }
 }
