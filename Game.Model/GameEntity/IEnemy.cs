@@ -1,10 +1,11 @@
-﻿using Game.Model.Weapon;
+﻿using Game.Model.Base;
+using Game.Model.Weapon;
 
-namespace Game.Model.GameEntity
+namespace Game.Model.GameEntity;
+
+public interface IEnemy : IGameEntity, IMoveable, ICreature
 {
-    public interface IEnemy : IGameEntity, IMoveable, ICreature
-    {
-        IWeapon Weapon { get; }
-    }
+    IWeapon Weapon { get; }
 
+    IEnumerable<Position> GetPossibleNextPositions();
 }

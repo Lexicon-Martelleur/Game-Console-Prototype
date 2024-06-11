@@ -1,5 +1,6 @@
 ﻿using Game.Model.Base;
 using Game.Model.Weapon;
+using Game.Utility;
 
 namespace Game.Model.GameEntity;
 
@@ -29,5 +30,21 @@ public class Frog(uint id, Position position) : IEnemy
     public void UpdatePosition(Position newPosition)
     {
         Position = newPosition;
+    }
+
+    public IEnumerable<Position> GetPossibleNextPositions()
+    {
+        List<Position> neigbours = [
+            new Position(position.x, position.y - 1),
+            new Position(position.x + 1, position.y - 1),
+            new Position(position.x + 1, position.y),
+            new Position(position.x + 1, position.y + 1),
+            new Position(position.x, position.y + 1),
+            new Position(position.x - 1, position.y + 1),
+            new Position(position.x - 1, position.y),
+            new Position(position.x - 1, position.y - 1),
+        ];
+        neigbours.Shuffle();
+        return neigbours;
     }
 }

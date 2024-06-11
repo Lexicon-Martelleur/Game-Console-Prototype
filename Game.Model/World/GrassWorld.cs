@@ -3,6 +3,7 @@ using Game.Model.Constant;
 using Game.Model.GameEntity;
 using Game.Model.Map;
 using Game.Model.Terrain;
+using Game.Utility;
 
 namespace Game.Model.World;
 
@@ -128,6 +129,15 @@ public class GrassWorld : IWorld
         return (position.x == 40 || position.x == 41) && position.y != 2;
     }
 
+
+    public bool IsValidPlayerPosition(Position position)
+    {
+        return !(
+            IsStoneTerrain(position) ||
+            IsOutsideMap(position)
+        );
+    }
+
     public bool IsOutsideMap(Position position)
     {
         return (position.x < 0 ||
@@ -168,5 +178,45 @@ public class GrassWorld : IWorld
         }
         var terrain = findCell?.Terrain;
         return terrain as IDangerousTerrain;
+    }
+
+    public Position GetNewEnemyPosition(IEnemy enemy)
+    {
+        var currPosition = enemy.Position;
+        Position nextPosition = currPosition;
+        var isValidPos = false;
+        var neigbours = GetPossibleNextPositions(currPosition);
+        foreach (var position in neigbours)
+        {
+            nextPosition = position;
+            isValidPos = IsValidEnemyPosition(nextPosition);
+            if (isValidPos) { break; }
+        }
+        return nextPosition;
+    }
+
+    private bool IsValidEnemyPosition(Position position)
+    {
+        return (
+            IsValidPlayerPosition(position) &&
+            GetDangerousTerrain(position) == null
+        );
+    }
+
+    // TODO! Move to IEnenmy
+    private List<Position> GetPossibleNextPositions(Position pos)
+    {
+        List<Position> neigbours = [
+            new Position(pos.x, pos.y - 1),
+            new Position(pos.x + 1, pos.y - 1),
+            new Position(pos.x + 1, pos.y),
+            new Position(pos.x + 1, pos.y + 1),
+            new Position(pos.x, pos.y + 1),
+            new Position(pos.x - 1, pos.y + 1),
+            new Position(pos.x - 1, pos.y),
+            new Position(pos.x - 1, pos.y - 1),
+        ];
+        neigbours.Shuffle();
+        return neigbours;
     }
 }

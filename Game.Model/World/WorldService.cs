@@ -106,7 +106,7 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         _oddTimeFrame = !_oddTimeFrame;
         foreach (var enemy in CurrentWorld.WorldItems.OfType<IEnemy>())
         {
-            enemy.UpdatePosition(GetNewRandomPostion(enemy.Position));
+            enemy.UpdatePosition(CurrentWorld.GetNewEnemyPosition(enemy));
         }
     }
 
@@ -148,37 +148,6 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
         CurrentWorld.WorldItems = CurrentWorld.WorldItems
             .Where(item => e.Data.Position != item.Position);
         _worldEvents.OnGameToken(source, e);
-    }
-
-    private Position GetNewRandomPostion(Position prevPosition)
-    {
-        Position nextPosition = prevPosition;
-        var isValidPos = false;
-        var neigbours = GetNeighbourPositions(prevPosition);
-        foreach (var position in neigbours)
-        {
-            nextPosition = position;
-            isValidPos = IsValidPosition(nextPosition) &&
-                CurrentWorld.GetDangerousTerrain(nextPosition) == null;
-            if (isValidPos) { break; }
-        }
-        return nextPosition;
-    }
-
-    private List<Position> GetNeighbourPositions(Position pos)
-    {
-        List<Position> neigbours = [
-            new Position(pos.x, pos.y - 1),
-            new Position(pos.x + 1, pos.y - 1),
-            new Position(pos.x + 1, pos.y),
-            new Position(pos.x + 1, pos.y + 1),
-            new Position(pos.x, pos.y + 1),
-            new Position(pos.x - 1, pos.y + 1),
-            new Position(pos.x - 1, pos.y),
-            new Position(pos.x - 1, pos.y - 1),
-        ];
-        neigbours.Shuffle();
-        return neigbours;
     }
 
     private bool IsFightPosition(IDiscoverableArtifact item)
@@ -231,15 +200,7 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
             default: break;
         }
         nextPos = new Position(nextX, nextY);
-        return IsValidPosition(nextPos);
-    }
-
-    private bool IsValidPosition(Position position)
-    {
-        return !(
-            CurrentWorld.IsStoneTerrain(position) ||
-            CurrentWorld.IsOutsideMap(position)
-        );
+        return CurrentWorld.IsValidPlayerPosition(nextPos);
     }
 
     private void UpdatePlayerHealth(Position position)

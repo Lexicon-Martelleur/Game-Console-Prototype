@@ -1,5 +1,6 @@
 ﻿using Game.Model.Base;
 using Game.Model.Weapon;
+using Game.Utility;
 
 namespace Game.Model.GameEntity;
 
@@ -54,6 +55,22 @@ public class Chameleon : IEnemy, IDisguisable
     public void UpdatePosition(Position newPosition)
     {
         Position = newPosition;
+    }
+
+    public IEnumerable<Position> GetPossibleNextPositions()
+    {
+        List<Position> neigbours = [
+            new Position(_position.x, _position.y - 1),
+            new Position(_position.x + 1, _position.y - 1),
+            new Position(_position.x + 1, _position.y),
+            new Position(_position.x + 1, _position.y + 1),
+            new Position(_position.x, _position.y + 1),
+            new Position(_position.x - 1, _position.y + 1),
+            new Position(_position.x - 1, _position.y),
+            new Position(_position.x - 1, _position.y - 1),
+        ];
+        neigbours.Shuffle();
+        return neigbours;
     }
 }
 

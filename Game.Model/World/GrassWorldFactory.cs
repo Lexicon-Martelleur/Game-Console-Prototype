@@ -10,8 +10,8 @@ public class GrassWorldFactory : BaseWorldFactory
     {
         var heroEntity = new Hero(CreateID(), new Position(0, 0));
 
-        var easyGrassWorld = GetEasyGrassWorld();
-        var mediumGrassWorld = GetMediumGrassWorld();
+        var easyGrassWorld = GetImpossibleGrassWorld();
+        var mediumGrassWorld = GetImpossibleGrassWorld();
         var impossibleGrassWorld = GetImpossibleGrassWorld();
 
         Stack<IWorld> worlds = [];
