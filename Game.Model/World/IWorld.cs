@@ -30,6 +30,5 @@ public interface IWorld : IGameArtifact
     public bool IsStoneTerrain(Position position);
     public bool IsWaterTerrain(Position position);
     public IDangerousTerrain? GetDangerousTerrain(Position position);
-    public string GetTerrainDescription();
     public Position GetNewEnemyPosition(IEnemy enemy);
 }

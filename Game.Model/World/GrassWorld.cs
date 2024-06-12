@@ -1,20 +1,13 @@
 ﻿using Game.Model.Base;
-using Game.Model.Constant;
 using Game.Model.GameEntity;
 using Game.Model.Map;
 using Game.Model.Terrain;
-using System;
 
 namespace Game.Model.World;
 
-// TODO! Create an abstract base class.
-public class GrassWorld : IWorld
+public class GrassWorld : BaseWorld
 {
     private WorldMap? _worldMap; 
-
-    private readonly int _width = WorldConstant.WIDTH;
-    
-    private readonly int _height = WorldConstant.HEIGHT;
 
     private string _name;
     
@@ -24,9 +17,9 @@ public class GrassWorld : IWorld
 
     private uint _worldTime = 0;
 
-    public WorldMap? Map { get => _worldMap; }
+    public override WorldMap? Map { get => _worldMap; }
 
-    public IFlag Flag { get => _flag; }
+    public override IFlag Flag { get => _flag; }
 
 
     /// <summary>
@@ -47,9 +40,19 @@ public class GrassWorld : IWorld
         _worldItems = worldItems.Append(Flag);
     }
 
-    public uint WorldTime {
+    public override uint WorldTime {
         get => _worldTime;
         set => _worldTime = value;
+    }
+
+    public override string Symbol => "🌱";
+
+    public override string Name => _name;
+
+    public override IEnumerable<IDiscoverableArtifact> WorldItems
+    {
+        get => _worldItems;
+        set => _worldItems = value;
     }
 
     /// <summary>
@@ -91,24 +94,6 @@ public class GrassWorld : IWorld
             GetDangerousTerrain(position) == null
         );
     }
-
-    public bool IsValidEnemyPosition(Position position)
-    {
-        return (
-            IsValidHeroPosition(position) &&
-            GetDangerousTerrain(position) == null
-        );
-    }
-
-    public string Symbol => "🌱";
-
-    public string Name => _name;
-
-    public IEnumerable<IDiscoverableArtifact> WorldItems
-    {
-        get => _worldItems;
-        set => _worldItems = value;
-    }
     
     /// <summary>
     /// Used to get a snapshot of the world.
@@ -116,7 +101,7 @@ public class GrassWorld : IWorld
     /// <param name="hero">The hero in the world</param>
     /// <returns>A <see cref="WorldMap"/> of the current state of the world.</returns>
     /// <exception cref="InvalidWorldState">When invalid world state.</exception>
-    public WorldMap CreateWorldSnapShot(IHero hero)
+    public override WorldMap CreateWorldSnapShot(IHero hero)
     {
         ValidateWorldItems(_flag, _worldItems);
 
@@ -186,87 +171,23 @@ public class GrassWorld : IWorld
         }
     }
 
-    public bool IsStoneTerrain(Position position)
+    public override bool IsStoneTerrain(Position position)
     {
         return (position.x == 10 || position.x == 11) && position.y != 5;
     }
 
-    public bool IsFireTerrain(Position position)
+    public override bool IsFireTerrain(Position position)
     {
         return (position.x == 20 || position.x == 21) && position.y != 23;
     }
 
-    public bool IsWaterTerrain(Position position)
+    public override bool IsWaterTerrain(Position position)
     {
         return (position.x == 30 || position.x == 31) && position.y != 12;
     }
 
-    public bool IsCliffTerrain(Position position)
+    public override bool IsCliffTerrain(Position position)
     {
         return (position.x == 40 || position.x == 41) && position.y != 2;
-    }
-
-
-    public bool IsValidHeroPosition(Position position)
-    {
-        return !(
-            IsStoneTerrain(position) ||
-            IsOutsideMap(position)
-        );
-    }
-
-    public bool IsOutsideMap(Position position)
-    {
-        return (position.x < 0 ||
-            position.x >= _width ||
-            position.y < 0 ||
-            position.y >= _height);
-    }
-
-    public string GetTerrainDescription()
-    {
-        var fire = new Fire();
-        var water = new Water();
-        var cliff = new Cliff();
-        var stone = new Stone();
-        return $"({stone.Symbol} = -0," +
-            $" {water.Symbol} = -{water.ReduceHealth()}," +
-            $" {fire.Symbol} = -{fire.ReduceHealth()}," +
-            $" {cliff.Symbol} = -{cliff.ReduceHealth()})";
-    }
-
-    public IDangerousTerrain? GetDangerousTerrain(Position position)
-    {
-        if (_worldMap?.Cells == null)
-        {
-            return null;
-        }
-
-        Cell? findCell = null;
-        foreach (Cell cell in _worldMap.Cells)
-        {
-            if (cell.Position == position)
-            {
-                findCell = cell;
-                break;
-            }
-        }
-        var terrain = findCell?.Terrain;
-        return terrain as IDangerousTerrain;
-    }
-
-    public Position GetNewEnemyPosition(IEnemy enemy)
-    {
-        var currPosition = enemy.Position;
-        Position nextPosition = currPosition;
-        var isValidPos = false;
-        var neigbours = enemy.GetPossibleNextPositions();
-        foreach (var position in neigbours)
-        {
-            nextPosition = position;
-            isValidPos = IsValidEnemyPosition(nextPosition);
-            if (isValidPos) { break; }
-        }
-        return nextPosition;
     }
 }

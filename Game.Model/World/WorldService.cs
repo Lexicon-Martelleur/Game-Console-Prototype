@@ -370,7 +370,7 @@ public class WorldService(IHero hero, Stack<IWorld> worlds) : IWorldService
 
     public string GetTerrainDescription()
     {
-        return CurrentWorld.GetTerrainDescription();
+        return BaseWorld.GetTerrainDescription();
     }
 
     public void UpdateCreatureHealth(ICreature entity, IWeapon weapon)
